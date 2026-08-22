@@ -19,3 +19,15 @@ export const LIMITE_CARTES_GRATUIT = 10;
 // Stripe avec max_redemptions=200 (cf. saas/README.md pour la creation).
 // Applique automatiquement au checkout tant qu'il reste des redemptions.
 export const EARLY_BIRD_COUPON_ID = "early-bird-200";
+
+// Testeurs beta : acces complet (cartes illimitees) sans passer par Stripe,
+// via liste d'emails en variable d'env (BETA_TESTER_EMAILS, separes par
+// virgules). Aucun paiement, aucun abonnement Stripe cree pour ces comptes.
+export function estTesteurBeta(email: string | null | undefined) {
+  if (!email) return false;
+  const liste = (process.env.BETA_TESTER_EMAILS ?? "")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+  return liste.includes(email.toLowerCase());
+}

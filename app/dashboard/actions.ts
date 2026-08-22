@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { EARLY_BIRD_COUPON_ID, LIMITE_CARTES_GRATUIT, getStripe } from "@/lib/stripe";
+import { EARLY_BIRD_COUPON_ID, LIMITE_CARTES_GRATUIT, estTesteurBeta, getStripe } from "@/lib/stripe";
 
 const LANGUES_VALIDES = ["fr", "jp", "en", "kr", "cn"] as const;
 const STATUTS_ABONNEMENT_ACTIF = ["active", "trialing"];
@@ -44,7 +44,7 @@ export async function ajouterCarte(formData: FormData) {
     throw new Error("Langue invalide.");
   }
 
-  if (!(await abonnementActif(supabase, user.id))) {
+  if (!estTesteurBeta(user.email) && !(await abonnementActif(supabase, user.id))) {
     const { count } = await supabase
       .from("watchlist_items")
       .select("id", { count: "exact", head: true })

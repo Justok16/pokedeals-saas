@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { LIMITE_CARTES_GRATUIT } from "@/lib/stripe";
+import { LIMITE_CARTES_GRATUIT, estTesteurBeta } from "@/lib/stripe";
 import {
   ajouterCarte,
   basculerNotifEmail,
@@ -48,6 +48,7 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
     .maybeSingle();
   const abonnementActif =
     abonnement?.status === "active" || abonnement?.status === "trialing";
+  const testeurBeta = estTesteurBeta(user.email);
   const nombreCartes = cartes?.length ?? 0;
 
   const { data: alertes, error: erreurAlertes } = await supabase
@@ -94,7 +95,11 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
       <section className="flex items-center justify-between rounded-lg border border-line bg-surface p-5">
         <div>
           <h2 className="text-sm font-medium text-foreground">Abonnement</h2>
-          {abonnementActif ? (
+          {testeurBeta ? (
+            <p className="font-mono text-xs text-cyan">
+              Accès testeur — cartes illimitées
+            </p>
+          ) : abonnementActif ? (
             <p className="font-mono text-xs text-muted">
               Actif — cartes illimitées
               {abonnement?.current_period_end
@@ -107,7 +112,7 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
             </p>
           )}
         </div>
-        {abonnementActif ? (
+        {testeurBeta ? null : abonnementActif ? (
           <form action={creerSessionPortail}>
             <button type="submit" className={LIEN_DISCRET}>
               Gérer mon abonnement
