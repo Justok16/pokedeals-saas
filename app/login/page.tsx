@@ -32,8 +32,8 @@ export default function LoginPage() {
           Connexion à PokéDeals
         </h1>
         <p className="mt-2 text-sm text-muted">
-          Connecte-toi pour configurer ta watchlist et recevoir tes propres
-          alertes de bonnes affaires.
+          Le marché des cartes Pokémon ne dort jamais. Toi non plus tu ne
+          devrais pas avoir à le surveiller — on s&apos;en charge, 24/7.
         </p>
 
         <div className="mt-8 flex flex-col gap-3">
