@@ -4,6 +4,7 @@
 # Build Next.js
 /.next/
 /out/
+next-env.d.ts
 
 # Env locaux (jamais commit, secrets uniquement dans Vercel/GitHub)
 .env
