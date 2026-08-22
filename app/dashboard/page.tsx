@@ -54,9 +54,19 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
 
   const { data: alertes, error: erreurAlertes } = await supabase
     .from("watchlist_alerts")
-    .select("id, titre, prix, url, plateforme, created_at, watchlist_items(nom_carte)")
+    .select("id, titre, prix, url, plateforme, created_at, watchlist_items(nom_carte, prix_seuil)")
     .order("created_at", { ascending: false })
     .limit(20);
+
+  const { count: nombreAlertesTotal } = await supabase
+    .from("watchlist_alerts")
+    .select("id", { count: "exact", head: true });
+
+  const economieRecente = (alertes ?? []).reduce((total, alerte) => {
+    const seuil = alerte.watchlist_items?.[0]?.prix_seuil;
+    if (seuil == null) return total;
+    return total + Math.max(0, Number(seuil) - Number(alerte.prix));
+  }, 0);
 
   const { data: preferences } = await supabase
     .from("user_preferences")
@@ -86,6 +96,27 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
             </button>
           </form>
         </header>
+
+        <section className="grid grid-cols-3 gap-3">
+          <div className={PANNEAU}>
+            <p className="text-xs text-muted">Cartes surveillées</p>
+            <p className="mt-1 font-mono text-2xl font-bold text-foreground">
+              {nombreCartes}
+            </p>
+          </div>
+          <div className={PANNEAU}>
+            <p className="text-xs text-muted">Bonnes affaires reçues</p>
+            <p className="mt-1 font-mono text-2xl font-bold text-foreground">
+              {nombreAlertesTotal ?? 0}
+            </p>
+          </div>
+          <div className={PANNEAU}>
+            <p className="text-xs text-muted">Économies récentes</p>
+            <p className="mt-1 font-mono text-2xl font-bold text-cyan">
+              {economieRecente.toFixed(2)} €
+            </p>
+          </div>
+        </section>
 
         {searchParams.abonnement === "succes" && (
           <p className="rounded-xl bg-cyan/10 px-4 py-3 text-sm text-cyan">
@@ -299,28 +330,48 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
             </p>
           )}
 
-          {alertes?.map((alerte) => (
-            <a
-              key={alerte.id}
-              href={alerte.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-between rounded-xl bg-surface px-4 py-3 transition hover:-translate-y-0.5 hover:bg-surface-hover hover:shadow-[0_10px_24px_-14px_var(--cyan)]"
-            >
-              <div>
-                <p className="text-sm font-medium text-foreground">
-                  {alerte.watchlist_items?.[0]?.nom_carte ?? alerte.titre}
-                </p>
-                <p className="text-xs text-muted">
-                  {alerte.titre}
-                  {alerte.plateforme ? ` · ${alerte.plateforme}` : ""}
-                </p>
-              </div>
-              <p className="font-mono text-lg font-semibold text-accent">
-                {Number(alerte.prix).toFixed(2)} €
-              </p>
-            </a>
-          ))}
+          {alertes?.map((alerte) => {
+            const seuil = alerte.watchlist_items?.[0]?.prix_seuil;
+            const pourcentage =
+              seuil != null && Number(seuil) > 0
+                ? Math.round(((Number(seuil) - Number(alerte.prix)) / Number(seuil)) * 100)
+                : null;
+            return (
+              <a
+                key={alerte.id}
+                href={alerte.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-between rounded-xl bg-surface px-4 py-3 transition hover:-translate-y-0.5 hover:bg-surface-hover hover:shadow-[0_10px_24px_-14px_var(--cyan)]"
+              >
+                <div>
+                  <p className="text-sm font-medium text-foreground">
+                    {alerte.watchlist_items?.[0]?.nom_carte ?? alerte.titre}
+                  </p>
+                  <p className="text-xs text-muted">
+                    {alerte.titre}
+                    {alerte.plateforme ? ` · ${alerte.plateforme}` : ""}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  {pourcentage != null && pourcentage > 0 && (
+                    <span
+                      className={`rounded-full px-2 py-0.5 font-mono text-xs font-semibold ${
+                        pourcentage >= 15
+                          ? "bg-cyan/15 text-cyan"
+                          : "bg-accent/15 text-accent"
+                      }`}
+                    >
+                      −{pourcentage}%
+                    </span>
+                  )}
+                  <p className="font-mono text-lg font-semibold text-accent">
+                    {Number(alerte.prix).toFixed(2)} €
+                  </p>
+                </div>
+              </a>
+            );
+          })}
         </section>
       </main>
     </div>
