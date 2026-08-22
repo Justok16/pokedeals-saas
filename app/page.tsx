@@ -26,6 +26,24 @@ const ETAPES = [
   },
 ];
 
+const CONFIANCE = [
+  {
+    titre: "Jamais deux fois la même alerte",
+    texte:
+      "Chaque annonce n'est signalée qu'une seule fois, même si elle reste en ligne plusieurs jours.",
+  },
+  {
+    titre: "Prix incohérents écartés",
+    texte:
+      "Une annonce anormalement basse ou haute par rapport à la cote de référence est automatiquement filtrée avant de t'atteindre.",
+  },
+  {
+    titre: "Correspondance vérifiée",
+    texte:
+      "Nom de carte, numéro, langue et édition sont analysés pour éviter les faux positifs sur ta watchlist.",
+  },
+];
+
 const FAQ = [
   {
     question: "Combien coûte PokéDeals ?",
@@ -185,6 +203,20 @@ export default async function Home() {
                   {etape.titre}
                 </h3>
                 <p className="mt-1 text-sm text-muted">{etape.texte}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="flex w-full flex-col gap-6">
+          <h2 className="text-center font-display text-xl font-bold text-foreground">
+            Détection intelligente
+          </h2>
+          <div className="grid gap-4 sm:grid-cols-3">
+            {CONFIANCE.map((item) => (
+              <div key={item.titre} className="rounded-2xl bg-surface p-5">
+                <h3 className="text-sm font-semibold text-foreground">{item.titre}</h3>
+                <p className="mt-1 text-sm text-muted">{item.texte}</p>
               </div>
             ))}
           </div>
