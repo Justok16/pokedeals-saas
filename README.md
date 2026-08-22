@@ -3,8 +3,9 @@
 Application web (Next.js, App Router, Tailwind CSS) permettant à chaque
 utilisateur de configurer sa propre watchlist de cartes Pokémon TCG (nom,
 langue, seuil de prix) et de voir apparaître ici les bonnes affaires
-détectées par le bot `scraper/`, qui alimente la même base Supabase (cf.
-`scraper/connecteur_supabase.py`) en plus de ses alertes Telegram existantes.
+détectées par le bot de scraping (repo séparé, privé lui aussi ou public
+selon le choix retenu — voir `connecteur_supabase.py` de ce bot), qui
+alimente la même base Supabase en plus de ses alertes Telegram existantes.
 
 PWA : voir `public/sw.js`, `public/manifest` (généré via `app/manifest.ts`)
 et `app/register-sw.tsx`.
@@ -43,8 +44,9 @@ deux secrets à ajouter côté GitHub Actions pour connecter le scraper
    projet comme secrets `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` sur le
    dépôt GitHub (**Settings > Secrets and variables > Actions**). Sans ces
    secrets, le scraper continue de fonctionner normalement (fonctionnalité
-   optionnelle, cf. `scraper/connecteur_supabase.py`) — les utilisateurs ne
-   verront simplement aucune alerte apparaître dans leur dashboard.
+   optionnelle, cf. `connecteur_supabase.py` dans le repo du scraper) — les
+   utilisateurs ne verront simplement aucune alerte apparaître dans leur
+   dashboard.
 
 ### 2. Configurer les fournisseurs OAuth (Google + GitHub)
 
@@ -65,8 +67,8 @@ Dans **Authentication > URL Configuration**, ajouter l'URL du site (en local :
 ### 3. Notifications (push + email) — optionnel
 
 Chaque canal est indépendant et entièrement optionnel : sans sa config, ce
-canal est simplement désactivé (cf. `scraper/notifications_saas.py`), le
-reste de l'app fonctionne normalement.
+canal est simplement désactivé (cf. `notifications_saas.py` dans le repo du
+scraper), le reste de l'app fonctionne normalement.
 
 **Push navigateur** — aucun compte externe requis, juste une paire de clés
 VAPID auto-générées :

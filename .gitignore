@@ -1,0 +1,16 @@
+# Dépendances
+/node_modules
+
+# Build Next.js
+/.next/
+/out/
+
+# Env locaux (jamais commit, secrets uniquement dans Vercel/GitHub)
+.env
+.env.local
+.env.*.local
+
+# Divers
+.DS_Store
+*.pem
+npm-debug.log*
