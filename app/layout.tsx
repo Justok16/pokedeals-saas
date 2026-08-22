@@ -24,7 +24,7 @@ const jetbrainsMono = JetBrains_Mono({
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 const TITRE = "PokéDeals — Alertes en temps réel sur les cartes Pokémon TCG";
 const DESCRIPTION =
-  "Configure ta watchlist de cartes Pokémon TCG et reçois une alerte dès qu'une bonne affaire tombe sous ton seuil de prix, sur eBay, Vinted, Leboncoin et des dizaines de boutiques françaises et japonaises.";
+  "Configure ta watchlist de cartes Pokémon TCG et reçois une alerte dès qu'une bonne affaire tombe sous ton seuil de prix, sur eBay, Vinted et des dizaines de boutiques françaises et japonaises.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

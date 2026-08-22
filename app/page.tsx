@@ -1,5 +1,12 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { LIMITE_CARTES_GRATUIT } from "@/lib/stripe";
+
+const SOURCES = [
+  { nom: "eBay", detail: "Annonces et enchères" },
+  { nom: "Vinted", detail: "Nouvelles annonces particuliers" },
+  { nom: "Boutiques spécialisées", detail: "France 🇫🇷 et Japon 🇯🇵" },
+];
 
 const ETAPES = [
   {
@@ -8,9 +15,9 @@ const ETAPES = [
       "Ajoute les cartes qui t'intéressent (nom, langue, édition) et fixe le prix maximum auquel tu es prêt à acheter.",
   },
   {
-    titre: "On scanne le marché 24/7",
+    titre: "On surveille le marché pour toi",
     texte:
-      "eBay, Vinted, Leboncoin et des dizaines de boutiques françaises et japonaises spécialisées sont surveillées en continu.",
+      "eBay, Vinted et des dizaines de boutiques françaises et japonaises sont scannées automatiquement, plusieurs fois par heure.",
   },
   {
     titre: "Tu reçois l'alerte",
@@ -22,13 +29,17 @@ const ETAPES = [
 const FAQ = [
   {
     question: "Combien coûte PokéDeals ?",
-    reponse:
-      "Jusqu'à 3 cartes surveillées gratuitement, sans limite de temps. Au-delà, un abonnement mensuel donne accès à une watchlist illimitée.",
+    reponse: `Jusqu'à ${LIMITE_CARTES_GRATUIT} cartes surveillées gratuitement, sans limite de durée, sans carte bancaire requise. Au-delà, un abonnement à 7,99 €/mois donne accès à une watchlist illimitée.`,
   },
   {
     question: "Où sont scannées les bonnes affaires ?",
     reponse:
-      "eBay, Vinted, Leboncoin, ainsi que des dizaines de boutiques françaises et japonaises spécialisées dans les cartes Pokémon.",
+      "eBay, Vinted, ainsi que des dizaines de boutiques françaises et japonaises spécialisées dans les cartes Pokémon.",
+  },
+  {
+    question: "À quelle fréquence les annonces sont-elles scannées ?",
+    reponse:
+      "Automatiquement, plusieurs fois par heure selon la source — pas un scan permanent en temps réel, mais une surveillance régulière et continue.",
   },
   {
     question: "Comment je reçois mes alertes ?",
@@ -44,13 +55,23 @@ const DONNEES_STRUCTUREES = {
   applicationCategory: "ShoppingApplication",
   operatingSystem: "Web",
   description:
-    "Alertes en temps réel sur les bonnes affaires Pokémon TCG : configure ta watchlist et reçois une alerte dès qu'une carte tombe sous ton seuil de prix.",
-  offers: {
-    "@type": "Offer",
-    price: "0",
-    priceCurrency: "EUR",
-    description: "Jusqu'à 3 cartes surveillées gratuitement, abonnement pour un accès illimité.",
-  },
+    "Alertes automatiques sur les bonnes affaires Pokémon TCG : configure ta watchlist et reçois une alerte dès qu'une carte tombe sous ton seuil de prix.",
+  offers: [
+    {
+      "@type": "Offer",
+      name: "Gratuit",
+      price: "0",
+      priceCurrency: "EUR",
+      description: `Jusqu'à ${LIMITE_CARTES_GRATUIT} cartes surveillées.`,
+    },
+    {
+      "@type": "Offer",
+      name: "Abonnement",
+      price: "7.99",
+      priceCurrency: "EUR",
+      description: "Watchlist illimitée.",
+    },
+  ],
 };
 
 const DONNEES_STRUCTUREES_FAQ = {
@@ -85,12 +106,12 @@ export default async function Home() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(DONNEES_STRUCTUREES_FAQ) }}
       />
 
-      <main className="relative mx-auto flex w-full max-w-2xl flex-1 flex-col items-center gap-24 px-6 py-24">
+      <main className="relative mx-auto flex w-full max-w-4xl flex-1 flex-col items-center gap-24 px-6 py-24">
         <section className="flex flex-col items-center gap-6 text-center">
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-cyan">
-            Alertes de prix en direct
+            Ne cherche plus les bonnes affaires. On les trouve pour toi.
           </p>
-          <h1 className="font-display text-4xl font-extrabold tracking-tight text-foreground">
+          <h1 className="font-display text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl">
             PokéDeals
           </h1>
           <p className="max-w-md text-lg text-muted">
@@ -101,8 +122,53 @@ export default async function Home() {
             href={user ? "/dashboard" : "/login"}
             className="rounded-full bg-accent px-6 py-3 text-sm font-semibold text-accent-ink transition hover:-translate-y-0.5 hover:brightness-110 hover:shadow-[0_10px_24px_-10px_var(--accent)]"
           >
-            {user ? "Aller à ma watchlist" : "Commencer"}
+            {user ? "Aller à ma watchlist" : "Commencer gratuitement"}
           </Link>
+        </section>
+
+        <section className="w-full max-w-md">
+          <div className="rounded-2xl bg-surface p-5">
+            <p className="font-mono text-xs uppercase tracking-[0.15em] text-accent">
+              🔥 Bonne affaire détectée
+            </p>
+            <p className="mt-3 text-base font-semibold text-foreground">
+              Dracaufeu ex 199/165
+            </p>
+            <p className="font-mono text-xs text-muted">
+              🇫🇷 Français · Near Mint · eBay
+            </p>
+            <div className="mt-3 flex items-end justify-between">
+              <div>
+                <p className="text-xs text-muted">Prix trouvé</p>
+                <p className="font-mono text-2xl font-bold text-accent">38,50 €</p>
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-muted">Ton seuil</p>
+                <p className="font-mono text-sm text-foreground">50,00 €</p>
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-muted">Économie</p>
+                <p className="font-mono text-sm font-semibold text-cyan">−11,50 €</p>
+              </div>
+            </div>
+          </div>
+          <p className="mt-2 text-center text-xs text-muted">
+            Exemple d&apos;alerte reçue par notification push ou email.
+          </p>
+        </section>
+
+        <section className="flex w-full flex-col gap-6">
+          <h2 className="text-center font-display text-xl font-bold text-foreground">
+            Sources surveillées
+          </h2>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {SOURCES.map((source) => (
+              <div key={source.nom} className="rounded-2xl bg-surface p-5 text-center">
+                <p className="text-sm font-semibold text-foreground">{source.nom}</p>
+                <p className="mt-1 text-xs text-muted">{source.detail}</p>
+              </div>
+            ))}
+          </div>
         </section>
 
         <section className="flex w-full flex-col gap-6">
@@ -122,6 +188,42 @@ export default async function Home() {
               </div>
             ))}
           </div>
+        </section>
+
+        <section className="flex w-full flex-col gap-6">
+          <h2 className="text-center font-display text-xl font-bold text-foreground">
+            Tarifs
+          </h2>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="rounded-2xl bg-surface p-6">
+              <p className="text-sm font-semibold text-foreground">Gratuit</p>
+              <p className="mt-1 font-mono text-2xl font-bold text-foreground">0 €</p>
+              <ul className="mt-4 flex flex-col gap-2 text-sm text-muted">
+                <li>{LIMITE_CARTES_GRATUIT} cartes surveillées</li>
+                <li>Alertes push et email</li>
+                <li>Toutes les sources</li>
+                <li>Sans limite de durée</li>
+              </ul>
+            </div>
+            <div className="rounded-2xl bg-surface p-6 ring-1 ring-accent/40">
+              <p className="text-sm font-semibold text-accent">Abonnement</p>
+              <p className="mt-1 font-mono text-2xl font-bold text-foreground">
+                7,99 €<span className="text-sm font-normal text-muted">/mois</span>
+              </p>
+              <p className="mt-1 text-xs text-cyan">
+                4,99 €/mois à vie pour les 200 premiers abonnés fondateurs
+              </p>
+              <ul className="mt-4 flex flex-col gap-2 text-sm text-muted">
+                <li>Watchlist illimitée</li>
+                <li>Alertes push et email</li>
+                <li>Toutes les sources</li>
+                <li>Résiliable à tout moment</li>
+              </ul>
+            </div>
+          </div>
+          <p className="text-center text-xs text-muted">
+            Aucune carte bancaire requise pour commencer gratuitement.
+          </p>
         </section>
 
         <section className="flex w-full flex-col gap-6">
