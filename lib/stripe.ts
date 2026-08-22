@@ -13,7 +13,7 @@ export function getStripe() {
 }
 
 // Niveau gratuit : nombre de cartes surveillables sans abonnement actif.
-export const LIMITE_CARTES_GRATUIT = 10;
+export const LIMITE_CARTES_GRATUIT = 3;
 
 // Tarif early bird verrouille a vie pour les 200 premiers abonnes -- coupon
 // Stripe avec max_redemptions=200 (cf. saas/README.md pour la creation).
