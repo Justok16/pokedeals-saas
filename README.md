@@ -3,8 +3,7 @@
 Application web (Next.js, App Router, Tailwind CSS) permettant à chaque
 utilisateur de configurer sa propre watchlist de cartes Pokémon TCG (nom,
 langue, seuil de prix) et de voir apparaître ici les bonnes affaires
-détectées par le bot de scraping (repo séparé, privé lui aussi ou public
-selon le choix retenu — voir `connecteur_supabase.py` de ce bot), qui
+détectées par le bot de scraping (`justok16/pokedeals`, public), qui
 alimente la même base Supabase en plus de ses alertes Telegram existantes.
 
 PWA : voir `public/sw.js`, `public/manifest` (généré via `app/manifest.ts`)
