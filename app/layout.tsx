@@ -21,9 +21,25 @@ const jetbrainsMono = JetBrains_Mono({
   weight: ["400", "500", "700"],
 });
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+const TITRE = "PokéDeals — Alertes en temps réel sur les cartes Pokémon TCG";
+const DESCRIPTION =
+  "Configure ta watchlist de cartes Pokémon TCG et reçois une alerte dès qu'une bonne affaire tombe sous ton seuil de prix, sur eBay, Vinted, Leboncoin et des dizaines de boutiques françaises et japonaises.";
+
 export const metadata: Metadata = {
-  title: "PokéDeals",
-  description: "Alertes en temps réel sur les bonnes affaires Pokémon TCG.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: TITRE,
+    template: "%s — PokéDeals",
+  },
+  description: DESCRIPTION,
+  keywords: [
+    "Pokémon TCG",
+    "cartes Pokémon",
+    "bonnes affaires Pokémon",
+    "alerte prix Pokémon",
+    "watchlist cartes Pokémon",
+  ],
   manifest: "/manifest.webmanifest",
   icons: {
     icon: [{ url: "/icons/favicon-32.png", sizes: "32x32", type: "image/png" }],
@@ -34,10 +50,28 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
     title: "PokéDeals",
   },
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    locale: "fr_FR",
+    url: SITE_URL,
+    siteName: "PokéDeals",
+    title: TITRE,
+    description: DESCRIPTION,
+    images: [{ url: "/icons/icon-512.png", width: 512, height: 512, alt: "PokéDeals" }],
+  },
+  twitter: {
+    card: "summary",
+    title: TITRE,
+    description: DESCRIPTION,
+    images: ["/icons/icon-512.png"],
+  },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#1c1e22",
+  themeColor: "#0f1a3d",
   width: "device-width",
   initialScale: 1,
 };

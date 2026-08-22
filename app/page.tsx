@@ -1,6 +1,22 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 
+const DONNEES_STRUCTUREES = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  name: "PokéDeals",
+  applicationCategory: "ShoppingApplication",
+  operatingSystem: "Web",
+  description:
+    "Alertes en temps réel sur les bonnes affaires Pokémon TCG : configure ta watchlist et reçois une alerte dès qu'une carte tombe sous ton seuil de prix.",
+  offers: {
+    "@type": "Offer",
+    price: "0",
+    priceCurrency: "EUR",
+    description: "Jusqu'à 3 cartes surveillées gratuitement, abonnement pour un accès illimité.",
+  },
+};
+
 export default async function Home() {
   const supabase = await createClient();
   const {
@@ -9,6 +25,10 @@ export default async function Home() {
 
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col items-center justify-center gap-6 px-6 py-24 text-center">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(DONNEES_STRUCTUREES) }}
+      />
       <p className="font-mono text-xs uppercase tracking-[0.2em] text-cyan">
         Alertes de prix en direct
       </p>
