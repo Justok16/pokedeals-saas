@@ -21,7 +21,7 @@ export default async function Home() {
       </p>
       <Link
         href={user ? "/dashboard" : "/login"}
-        className="rounded-md bg-amber px-6 py-3 text-sm font-semibold text-amber-ink transition hover:brightness-110"
+        className="rounded-md bg-accent px-6 py-3 text-sm font-semibold text-accent-ink transition hover:-translate-y-0.5 hover:brightness-110 hover:shadow-[0_10px_24px_-10px_var(--accent)]"
       >
         {user ? "Aller à ma watchlist" : "Commencer"}
       </Link>
