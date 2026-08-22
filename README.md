@@ -1,5 +1,7 @@
 # PokéDeals — SaaS
 
+Repo séparé depuis le 22/08/2026 (voir historique).
+
 Application web (Next.js, App Router, Tailwind CSS) permettant à chaque
 utilisateur de configurer sa propre watchlist de cartes Pokémon TCG (nom,
 langue, seuil de prix) et de voir apparaître ici les bonnes affaires
