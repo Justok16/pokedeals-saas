@@ -273,6 +273,9 @@ export async function envoyerFeedback(formData: FormData) {
   if (!message) {
     throw new Error("Le message ne peut pas être vide.");
   }
+  if (message.length > 2000) {
+    throw new Error("Le message est trop long (2000 caractères maximum).");
+  }
 
   const { error } = await supabase.from("feedback").insert({
     user_id: user.id,
@@ -282,6 +285,5 @@ export async function envoyerFeedback(formData: FormData) {
     throw new Error(`Erreur lors de l'envoi : ${error.message}`);
   }
 
-  revalidatePath("/dashboard");
   redirect("/dashboard?feedback=envoye");
 }

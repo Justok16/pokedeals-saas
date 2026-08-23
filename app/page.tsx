@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { LIMITE_CARTES_GRATUIT } from "@/lib/stripe";
+import { NOMBRE_BOUTIQUES } from "@/lib/constantes";
 
 const SOURCES = [
   { nom: "eBay", detail: "Annonces et enchères" },
@@ -16,8 +17,7 @@ const ETAPES = [
   },
   {
     titre: "On surveille le marché pour toi",
-    texte:
-      "eBay, Vinted et 83+ boutiques françaises et japonaises sont scannées automatiquement, plusieurs fois par heure.",
+    texte: `eBay, Vinted et ${NOMBRE_BOUTIQUES} boutiques françaises et japonaises sont scannées automatiquement, plusieurs fois par heure.`,
   },
   {
     titre: "Tu reçois l'alerte",
@@ -27,7 +27,7 @@ const ETAPES = [
 ];
 
 const CHIFFRES = [
-  { valeur: "83+", label: "boutiques françaises et japonaises surveillées" },
+  { valeur: NOMBRE_BOUTIQUES, label: "boutiques françaises et japonaises surveillées" },
   { valeur: "380", label: "tests automatisés sur le moteur de détection" },
   { valeur: "100%", label: "moteur de scan open source, code public" },
 ];
@@ -57,8 +57,7 @@ const FAQ = [
   },
   {
     question: "Où sont scannées les bonnes affaires ?",
-    reponse:
-      "eBay, Vinted, ainsi que 83+ boutiques françaises et japonaises spécialisées dans les cartes Pokémon.",
+    reponse: `eBay, Vinted, ainsi que ${NOMBRE_BOUTIQUES} boutiques françaises et japonaises spécialisées dans les cartes Pokémon.`,
   },
   {
     question: "À quelle fréquence les annonces sont-elles scannées ?",

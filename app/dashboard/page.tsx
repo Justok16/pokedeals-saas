@@ -422,6 +422,7 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
               <textarea
                 name="message"
                 required
+                maxLength={2000}
                 rows={3}
                 placeholder="Dis-moi ce qui te plaît, ce qui te manque, ce qui bugue..."
                 className={`${CHAMP} resize-none`}

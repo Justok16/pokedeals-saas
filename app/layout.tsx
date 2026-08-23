@@ -3,6 +3,7 @@ import { Syne, IBM_Plex_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import RegisterServiceWorker from "./register-sw";
 import Footer from "./footer";
+import { NOMBRE_BOUTIQUES } from "@/lib/constantes";
 
 const syne = Syne({
   variable: "--font-display",
@@ -24,8 +25,7 @@ const jetbrainsMono = JetBrains_Mono({
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 const TITRE = "PokéDeals — Alertes automatiques sur les cartes Pokémon TCG";
-const DESCRIPTION =
-  "Configure ta watchlist de cartes Pokémon TCG et reçois une alerte dès qu'une bonne affaire tombe sous ton seuil de prix, sur eBay, Vinted et 83+ boutiques françaises et japonaises.";
+const DESCRIPTION = `Configure ta watchlist de cartes Pokémon TCG et reçois une alerte dès qu'une bonne affaire tombe sous ton seuil de prix, sur eBay, Vinted et ${NOMBRE_BOUTIQUES} boutiques françaises et japonaises.`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
