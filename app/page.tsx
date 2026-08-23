@@ -290,8 +290,11 @@ export default async function Home() {
                 <span className="font-mono text-4xl font-bold text-accent">4,99 €</span>
                 <span className="text-sm font-normal text-muted">/mois</span>
               </p>
-              <p className="text-xs text-muted">
-                <span className="line-through">7,99 €/mois</span> — tarif verrouillé à vie, tant qu'il reste des places
+              <p className="mt-1 text-xs text-cyan">
+                Prix garanti à vie pour les 200 premiers abonnés, tant que l&apos;abonnement reste actif.
+              </p>
+              <p className="mt-1 text-xs text-muted">
+                <span className="line-through">7,99 €/mois</span> pour les abonnés suivants, une fois les 200 places prises.
               </p>
               <ul className="mt-4 flex flex-col gap-2 text-sm text-muted">
                 <li>Watchlist illimitée</li>
