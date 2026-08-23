@@ -69,6 +69,11 @@ const FAQ = [
     reponse:
       "Oui pour les boutiques partenaires, sans aucune limite de nombre de cartes. Sur eBay et Vinted, où chaque carte représente une recherche distincte, les cartes les plus suivies par l'ensemble des utilisateurs sont priorisées en cas de forte affluence, pour respecter les limites techniques imposées par ces plateformes.",
   },
+  {
+    question: "Une alerte garantit-elle que la carte est encore disponible ?",
+    reponse:
+      "Non. PokéDeals détecte les opportunités au moment du scan. Une annonce peut être vendue, retirée ou modifiée entre deux scans — vérifie toujours l'annonce avant d'acheter.",
+  },
 ];
 
 const DONNEES_STRUCTUREES = {

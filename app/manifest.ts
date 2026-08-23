@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "PokéDeals",
     short_name: "PokéDeals",
-    description: "Alertes en temps réel sur les bonnes affaires Pokémon TCG.",
+    description: "Alertes automatiques sur les bonnes affaires Pokémon TCG.",
     start_url: "/",
     display: "standalone",
     background_color: "#1c1e22",
