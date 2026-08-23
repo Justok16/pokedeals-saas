@@ -17,7 +17,7 @@ const ETAPES = [
   {
     titre: "On surveille le marché pour toi",
     texte:
-      "eBay, Vinted et des dizaines de boutiques françaises et japonaises sont scannées automatiquement, plusieurs fois par heure.",
+      "eBay, Vinted et 83+ boutiques françaises et japonaises sont scannées automatiquement, plusieurs fois par heure.",
   },
   {
     titre: "Tu reçois l'alerte",
@@ -52,7 +52,7 @@ const FAQ = [
   {
     question: "Où sont scannées les bonnes affaires ?",
     reponse:
-      "eBay, Vinted, ainsi que des dizaines de boutiques françaises et japonaises spécialisées dans les cartes Pokémon.",
+      "eBay, Vinted, ainsi que 83+ boutiques françaises et japonaises spécialisées dans les cartes Pokémon.",
   },
   {
     question: "À quelle fréquence les annonces sont-elles scannées ?",
