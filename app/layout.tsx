@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Syne, IBM_Plex_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import RegisterServiceWorker from "./register-sw";
+import Footer from "./footer";
 
 const syne = Syne({
   variable: "--font-display",
@@ -88,6 +89,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col">
         <RegisterServiceWorker />
         {children}
+        <Footer />
       </body>
     </html>
   );
