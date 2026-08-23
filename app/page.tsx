@@ -47,7 +47,7 @@ const CONFIANCE = [
 const FAQ = [
   {
     question: "Combien coûte PokéDeals ?",
-    reponse: `Jusqu'à ${LIMITE_CARTES_GRATUIT} cartes surveillées gratuitement, sans limite de durée, sans carte bancaire requise. Au-delà, un abonnement à 7,99 €/mois donne accès à une watchlist illimitée.`,
+    reponse: `Jusqu'à ${LIMITE_CARTES_GRATUIT} cartes surveillées gratuitement, sans limite de durée, sans carte bancaire requise. Au-delà, l'abonnement (watchlist illimitée) est à 4,99 €/mois à vie pour les 200 premiers abonnés fondateurs — 7,99 €/mois ensuite.`,
   },
   {
     question: "Où sont scannées les bonnes affaires ?",
@@ -142,6 +142,11 @@ export default async function Home() {
           >
             {user ? "Aller à ma watchlist" : "Commencer gratuitement"}
           </Link>
+          {!user && (
+            <p className="font-mono text-xs text-cyan">
+              Watchlist illimitée à 4,99 €/mois à vie — offre fondateur, 200 places
+            </p>
+          )}
         </section>
 
         <section className="w-full max-w-md">
@@ -237,13 +242,17 @@ export default async function Home() {
                 <li>Sans limite de durée</li>
               </ul>
             </div>
-            <div className="rounded-2xl bg-surface p-6 ring-1 ring-accent/40">
-              <p className="text-sm font-semibold text-accent">Abonnement</p>
-              <p className="mt-1 font-mono text-2xl font-bold text-foreground">
-                7,99 €<span className="text-sm font-normal text-muted">/mois</span>
+            <div className="rounded-2xl bg-surface p-6 ring-2 ring-accent">
+              <span className="inline-block rounded-full bg-accent px-2.5 py-1 font-mono text-[0.65rem] font-bold uppercase tracking-wide text-accent-ink">
+                Offre fondateur · 200 places
+              </span>
+              <p className="mt-3 text-sm font-semibold text-foreground">Abonnement</p>
+              <p className="mt-1 flex items-baseline gap-2">
+                <span className="font-mono text-4xl font-bold text-accent">4,99 €</span>
+                <span className="text-sm font-normal text-muted">/mois</span>
               </p>
-              <p className="mt-1 text-xs text-cyan">
-                4,99 €/mois à vie pour les 200 premiers abonnés fondateurs
+              <p className="text-xs text-muted">
+                <span className="line-through">7,99 €/mois</span> — tarif verrouillé à vie, tant qu'il reste des places
               </p>
               <ul className="mt-4 flex flex-col gap-2 text-sm text-muted">
                 <li>Watchlist illimitée</li>

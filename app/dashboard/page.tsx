@@ -158,18 +158,23 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
                   : ""}
               </p>
             ) : (
-              <div className="flex items-center gap-3">
-                <p className="font-mono text-xs text-muted">
-                  {nombreCartes}/{LIMITE_CARTES_GRATUIT} cartes gratuites
-                </p>
-                <div className="h-1.5 flex-1 max-w-24 overflow-hidden rounded-full bg-line">
-                  <div
-                    className="h-full rounded-full bg-accent transition-all"
-                    style={{
-                      width: `${Math.min(100, (nombreCartes / LIMITE_CARTES_GRATUIT) * 100)}%`,
-                    }}
-                  />
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-3">
+                  <p className="font-mono text-xs text-muted">
+                    {nombreCartes}/{LIMITE_CARTES_GRATUIT} cartes gratuites
+                  </p>
+                  <div className="h-1.5 flex-1 max-w-24 overflow-hidden rounded-full bg-line">
+                    <div
+                      className="h-full rounded-full bg-accent transition-all"
+                      style={{
+                        width: `${Math.min(100, (nombreCartes / LIMITE_CARTES_GRATUIT) * 100)}%`,
+                      }}
+                    />
+                  </div>
                 </div>
+                <p className="font-mono text-xs text-cyan">
+                  Illimité à 4,99 €/mois à vie — offre fondateur, 200 places
+                </p>
               </div>
             )}
           </div>
