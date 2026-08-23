@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { LIMITE_CARTES_GRATUIT, estTesteurBeta } from "@/lib/stripe";
+import { normaliser } from "@/lib/normaliser";
 import {
   ajouterCarte,
   basculerNotifEmail,
@@ -54,7 +55,7 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
 
   const { data: alertes, error: erreurAlertes } = await supabase
     .from("watchlist_alerts")
-    .select("id, titre, prix, url, plateforme, created_at, watchlist_items(nom_carte, prix_seuil)")
+    .select("id, titre, prix, url, plateforme, created_at, watchlist_items(nom_carte, langue, prix_seuil)")
     .order("created_at", { ascending: false })
     .limit(20);
 
@@ -74,6 +75,19 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
     .eq("user_id", user.id)
     .maybeSingle();
   const notifEmailActive = preferences?.notif_email ?? true;
+
+  // Prix marché (cote calculée par le scraper, cf. moteur_cote.obtenir_cote
+  // côté Python) : donnée de marché, pas personnelle -- accessible à tout
+  // utilisateur authentifié (cf. migration 0005_market_cotes.sql).
+  const { data: cotesMarche } = await supabase
+    .from("market_cotes")
+    .select("nom_norm, langue, cote");
+  const coteParCle = new Map(
+    (cotesMarche ?? []).map((c) => [`${c.nom_norm}|${c.langue}`, Number(c.cote)])
+  );
+  function coteMarche(nomCarte: string, langue: string) {
+    return coteParCle.get(`${normaliser(nomCarte)}|${langue.toLowerCase()}`);
+  }
 
   return (
     <div className="relative overflow-hidden">
@@ -243,7 +257,9 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
             </p>
           )}
 
-          {cartes?.map((carte) => (
+          {cartes?.map((carte) => {
+            const cote = coteMarche(carte.nom_carte, carte.langue);
+            return (
             <details
               key={carte.id}
               className="rounded-xl bg-surface transition hover:bg-surface-hover"
@@ -255,6 +271,7 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
                   <p className="font-mono text-xs text-muted">
                     {LABELS_LANGUE[carte.langue] ?? carte.langue} · seuil{" "}
                     {Number(carte.prix_seuil).toFixed(2)} €
+                    {cote != null ? ` · marché ≈ ${cote.toFixed(2)} €` : ""}
                     {carte.notes ? ` · ${carte.notes}` : ""}
                   </p>
                 </div>
@@ -309,7 +326,8 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
                 </form>
               </div>
             </details>
-          ))}
+            );
+          })}
         </section>
 
         <section className="flex flex-col gap-2">
@@ -331,11 +349,15 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
           )}
 
           {alertes?.map((alerte) => {
-            const seuil = alerte.watchlist_items?.[0]?.prix_seuil;
+            const item = alerte.watchlist_items?.[0];
+            const cote = item ? coteMarche(item.nom_carte, item.langue) : undefined;
+            const seuil = item?.prix_seuil != null ? Number(item.prix_seuil) : null;
+            const reference = cote ?? seuil;
             const pourcentage =
-              seuil != null && Number(seuil) > 0
-                ? Math.round(((Number(seuil) - Number(alerte.prix)) / Number(seuil)) * 100)
+              reference != null && reference > 0
+                ? Math.round(((reference - Number(alerte.prix)) / reference) * 100)
                 : null;
+            const libelle = cote != null ? "sous la cote marché" : "sous ton seuil";
             return (
               <a
                 key={alerte.id}
@@ -356,6 +378,7 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
                 <div className="flex items-center gap-3">
                   {pourcentage != null && pourcentage > 0 && (
                     <span
+                      title={`${pourcentage}% ${libelle}`}
                       className={`rounded-full px-2 py-0.5 font-mono text-xs font-semibold ${
                         pourcentage >= 15
                           ? "bg-cyan/15 text-cyan"
