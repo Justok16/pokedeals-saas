@@ -261,3 +261,27 @@ export async function deconnexion() {
   await supabase.auth.signOut();
   redirect("/");
 }
+
+export async function envoyerFeedback(formData: FormData) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const message = String(formData.get("message") ?? "").trim();
+  if (!message) {
+    throw new Error("Le message ne peut pas être vide.");
+  }
+
+  const { error } = await supabase.from("feedback").insert({
+    user_id: user.id,
+    message,
+  });
+  if (error) {
+    throw new Error(`Erreur lors de l'envoi : ${error.message}`);
+  }
+
+  revalidatePath("/dashboard");
+  redirect("/dashboard?feedback=envoye");
+}

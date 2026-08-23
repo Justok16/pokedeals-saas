@@ -8,6 +8,7 @@ import {
   creerSessionCheckout,
   creerSessionPortail,
   deconnexion,
+  envoyerFeedback,
   modifierCarte,
   supprimerCarte,
 } from "./actions";
@@ -400,6 +401,34 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
               </a>
             );
           })}
+        </section>
+
+        <section className={PANNEAU}>
+          <h2 className="text-sm font-medium text-foreground">
+            Une suggestion ou une critique ?
+          </h2>
+          <p className="mt-1 text-xs text-muted">
+            Le site est en phase de test — tous les retours sont utiles, bons
+            ou mauvais.
+          </p>
+          {searchParams.feedback === "envoye" ? (
+            <p className="mt-4 text-sm text-cyan">
+              Merci, ton message a bien été envoyé !
+            </p>
+          ) : (
+            <form action={envoyerFeedback} className="mt-4 flex flex-col gap-3">
+              <textarea
+                name="message"
+                required
+                rows={3}
+                placeholder="Dis-moi ce qui te plaît, ce qui te manque, ce qui bugue..."
+                className={`${CHAMP} resize-none`}
+              />
+              <button type="submit" className={`${BOUTON_PRIMAIRE} self-start`}>
+                Envoyer
+              </button>
+            </form>
+          )}
         </section>
       </main>
     </div>
