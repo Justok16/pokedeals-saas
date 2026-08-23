@@ -26,6 +26,12 @@ const ETAPES = [
   },
 ];
 
+const CHIFFRES = [
+  { valeur: "83+", label: "boutiques françaises et japonaises surveillées" },
+  { valeur: "380", label: "tests automatisés sur le moteur de détection" },
+  { valeur: "100%", label: "moteur de scan open source, code public" },
+];
+
 const CONFIANCE = [
   {
     titre: "Jamais deux fois la même alerte",
@@ -235,6 +241,29 @@ export default async function Home() {
               </div>
             ))}
           </div>
+        </section>
+
+        <section className="flex w-full flex-col gap-6">
+          <div className="grid gap-4 sm:grid-cols-3">
+            {CHIFFRES.map((item) => (
+              <div key={item.label} className="rounded-2xl bg-surface p-5 text-center">
+                <p className="font-mono text-2xl font-bold text-accent">{item.valeur}</p>
+                <p className="mt-1 text-xs text-muted">{item.label}</p>
+              </div>
+            ))}
+          </div>
+          <p className="text-center text-xs text-muted">
+            Le moteur de détection est open source :{" "}
+            <a
+              href="https://github.com/Justok16/pokedeals"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-cyan hover:underline"
+            >
+              voir le code sur GitHub
+            </a>
+            .
+          </p>
         </section>
 
         <section className="flex w-full flex-col gap-6">
