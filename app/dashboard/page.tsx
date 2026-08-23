@@ -133,6 +133,8 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
           </div>
         </section>
 
+        {nombreCartes > 0 && <NotifPush banniere />}
+
         {searchParams.abonnement === "succes" && (
           <p className="rounded-xl bg-cyan/10 px-4 py-3 text-sm text-cyan">
             Abonnement activé, merci ! Ça peut prendre quelques secondes à

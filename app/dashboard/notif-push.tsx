@@ -12,9 +12,27 @@ function urlBase64ToUint8Array(base64: string) {
 
 type Etat = "indisponible" | "inactif" | "actif" | "en_cours" | "refuse";
 
-export default function NotifPush() {
+const CLE_BANNIERE_MASQUEE = "pokedeals_push_banniere_masquee";
+
+export default function NotifPush({
+  banniere = false,
+}: {
+  /** true = bannière contextuelle proposée après l'ajout d'une carte, false = simple lien dans les réglages. */
+  banniere?: boolean;
+}) {
   const [etat, setEtat] = useState<Etat>("inactif");
   const [erreur, setErreur] = useState<string | null>(null);
+  const [masquee, setMasquee] = useState(true);
+
+  useEffect(() => {
+    if (banniere) {
+      try {
+        setMasquee(localStorage.getItem(CLE_BANNIERE_MASQUEE) === "1");
+      } catch {
+        setMasquee(false);
+      }
+    }
+  }, [banniere]);
 
   useEffect(() => {
     if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
@@ -64,6 +82,16 @@ export default function NotifPush() {
     }
   }
 
+  function masquer() {
+    try {
+      localStorage.setItem(CLE_BANNIERE_MASQUEE, "1");
+    } catch {
+      // localStorage indisponible (navigation privée...) -- la bannière
+      // réapparaîtra à la prochaine visite, sans conséquence bloquante.
+    }
+    setMasquee(true);
+  }
+
   async function desactiver() {
     setErreur(null);
     setEtat("en_cours");
@@ -82,10 +110,41 @@ export default function NotifPush() {
   }
 
   if (etat === "indisponible") {
-    return (
+    return banniere ? null : (
       <p className="text-xs text-muted">
         Notifications push non supportées sur ce navigateur.
       </p>
+    );
+  }
+
+  if (banniere) {
+    if (masquee || (etat !== "inactif" && etat !== "en_cours")) return null;
+    return (
+      <div className="flex flex-col gap-3 rounded-2xl bg-surface p-5 ring-1 ring-accent/40 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-sm font-semibold text-foreground">
+            Ne rate aucune alerte
+          </p>
+          <p className="mt-1 text-xs text-muted">
+            Active les notifications push pour être prévenu dès qu&apos;une bonne affaire tombe
+            sous ton seuil, même onglet fermé.
+          </p>
+          {erreur && <p className="mt-1 text-xs text-danger">{erreur}</p>}
+        </div>
+        <div className="flex shrink-0 items-center gap-3">
+          <button type="button" onClick={masquer} className="text-xs text-muted hover:text-foreground">
+            Plus tard
+          </button>
+          <button
+            type="button"
+            onClick={activer}
+            disabled={etat === "en_cours"}
+            className="rounded-full bg-accent px-4 py-2 text-xs font-semibold text-accent-ink transition hover:brightness-110 disabled:opacity-50"
+          >
+            Activer les notifications
+          </button>
+        </div>
+      </div>
     );
   }
 
