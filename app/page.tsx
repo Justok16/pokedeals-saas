@@ -127,7 +127,11 @@ export default async function Home() {
     <div className="relative overflow-hidden">
       <div
         aria-hidden
-        className="pointer-events-none absolute -top-40 left-1/2 h-96 w-[42rem] -translate-x-1/2 rounded-full bg-accent/20 blur-[100px]"
+        className="pointer-events-none absolute -top-32 right-[-10%] h-96 w-[36rem] rounded-full bg-cyan/25 blur-[110px]"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -top-24 left-[-10%] h-80 w-[32rem] rounded-full bg-accent/20 blur-[100px]"
       />
 
       <script
@@ -144,7 +148,7 @@ export default async function Home() {
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-cyan">
             Ne cherche plus les bonnes affaires. On les trouve pour toi.
           </p>
-          <h1 className="font-display text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl">
+          <h1 className="font-display text-4xl leading-tight tracking-tight text-foreground sm:text-5xl">
             PokéDeals
           </h1>
           <p className="max-w-md text-lg text-muted">
@@ -153,7 +157,7 @@ export default async function Home() {
           </p>
           <Link
             href={user ? "/dashboard" : "/login"}
-            className="rounded-full bg-accent px-6 py-3 text-sm font-semibold text-accent-ink transition hover:-translate-y-0.5 hover:brightness-110 hover:shadow-[0_10px_24px_-10px_var(--accent)]"
+            className="rounded-full bg-accent px-6 py-3 text-sm font-semibold text-accent-ink shadow-[0_10px_30px_-8px_rgba(255,210,63,0.6)] transition hover:-translate-y-0.5 hover:brightness-110"
           >
             {user ? "Aller à ma watchlist" : "Commencer gratuitement"}
           </Link>
@@ -165,28 +169,30 @@ export default async function Home() {
         </section>
 
         <section className="w-full max-w-md">
-          <div className="rounded-2xl bg-surface p-5">
-            <p className="font-mono text-xs uppercase tracking-[0.15em] text-accent">
-              🔥 Bonne affaire détectée
-            </p>
-            <p className="mt-3 text-base font-semibold text-foreground">
-              Dracaufeu ex 199/165
-            </p>
-            <p className="font-mono text-xs text-muted">
-              🇫🇷 Français · Near Mint · eBay
-            </p>
-            <div className="mt-3 flex items-end justify-between">
-              <div>
-                <p className="text-xs text-muted">Prix trouvé</p>
-                <p className="font-mono text-2xl font-bold text-accent">38,50 €</p>
-              </div>
-              <div className="text-right">
-                <p className="text-xs text-muted">Ton seuil</p>
-                <p className="font-mono text-sm text-foreground">50,00 €</p>
-              </div>
-              <div className="text-right">
-                <p className="text-xs text-muted">Économie</p>
-                <p className="font-mono text-sm font-semibold text-cyan">−11,50 €</p>
+          <div className="rounded-2xl bg-gradient-to-br from-accent via-cyan to-accent p-[1.5px]">
+            <div className="rounded-[15px] bg-surface p-5">
+              <p className="font-mono text-xs uppercase tracking-[0.15em] text-accent">
+                🔥 Bonne affaire détectée
+              </p>
+              <p className="mt-3 text-base font-semibold text-foreground">
+                Dracaufeu ex 199/165
+              </p>
+              <p className="font-mono text-xs text-muted">
+                🇫🇷 Français · Near Mint · eBay
+              </p>
+              <div className="mt-3 flex items-end justify-between">
+                <div>
+                  <p className="text-xs text-muted">Prix trouvé</p>
+                  <p className="font-mono text-2xl font-bold text-accent">38,50 €</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-muted">Ton seuil</p>
+                  <p className="font-mono text-sm text-foreground">50,00 €</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-muted">Économie</p>
+                  <p className="font-mono text-sm font-semibold text-cyan">−11,50 €</p>
+                </div>
               </div>
             </div>
           </div>
@@ -280,27 +286,29 @@ export default async function Home() {
                 <li>Sans limite de durée</li>
               </ul>
             </div>
-            <div className="rounded-2xl bg-surface p-6 ring-2 ring-accent">
-              <span className="inline-block rounded-full bg-accent px-2.5 py-1 font-mono text-[0.65rem] font-bold uppercase tracking-wide text-accent-ink">
-                Offre fondateur · 200 places
-              </span>
-              <p className="mt-3 text-sm font-semibold text-foreground">Abonnement</p>
-              <p className="mt-1 flex items-baseline gap-2">
-                <span className="font-mono text-4xl font-bold text-accent">4,99 €</span>
-                <span className="text-sm font-normal text-muted">/mois</span>
-              </p>
-              <p className="mt-1 text-xs text-cyan">
-                Prix garanti à vie pour les 200 premiers abonnés, tant que l&apos;abonnement reste actif.
-              </p>
-              <p className="mt-1 text-xs text-muted">
-                <span className="line-through">7,99 €/mois</span> pour les abonnés suivants, une fois les 200 places prises.
-              </p>
-              <ul className="mt-4 flex flex-col gap-2 text-sm text-muted">
-                <li>Watchlist illimitée</li>
-                <li>Alertes push et email</li>
-                <li>Toutes les sources</li>
-                <li>Résiliable à tout moment</li>
-              </ul>
+            <div className="rounded-2xl bg-gradient-to-br from-accent to-cyan p-[1.5px]">
+              <div className="h-full rounded-[15px] bg-surface p-6">
+                <span className="inline-block rounded-full bg-accent px-2.5 py-1 font-mono text-[0.65rem] font-bold uppercase tracking-wide text-accent-ink">
+                  Offre fondateur · 200 places
+                </span>
+                <p className="mt-3 text-sm font-semibold text-foreground">Abonnement</p>
+                <p className="mt-1 flex items-baseline gap-2">
+                  <span className="font-mono text-4xl font-bold text-accent">4,99 €</span>
+                  <span className="text-sm font-normal text-muted">/mois</span>
+                </p>
+                <p className="mt-1 text-xs text-cyan">
+                  Prix garanti à vie pour les 200 premiers abonnés, tant que l&apos;abonnement reste actif.
+                </p>
+                <p className="mt-1 text-xs text-muted">
+                  <span className="line-through">7,99 €/mois</span> pour les abonnés suivants, une fois les 200 places prises.
+                </p>
+                <ul className="mt-4 flex flex-col gap-2 text-sm text-muted">
+                  <li>Watchlist illimitée</li>
+                  <li>Alertes push et email</li>
+                  <li>Toutes les sources</li>
+                  <li>Résiliable à tout moment</li>
+                </ul>
+              </div>
             </div>
           </div>
           <p className="text-center text-xs text-muted">

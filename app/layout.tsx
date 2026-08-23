@@ -1,20 +1,20 @@
 import type { Metadata, Viewport } from "next";
-import { Syne, IBM_Plex_Sans, JetBrains_Mono } from "next/font/google";
+import { Bungee, Sora, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import RegisterServiceWorker from "./register-sw";
 import Footer from "./footer";
 import { NOMBRE_BOUTIQUES } from "@/lib/constantes";
 
-const syne = Syne({
+const bungee = Bungee({
   variable: "--font-display",
   subsets: ["latin"],
-  weight: ["600", "700", "800"],
+  weight: ["400"],
 });
 
-const plexSans = IBM_Plex_Sans({
+const sora = Sora({
   variable: "--font-sans",
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
+  weight: ["400", "500", "600", "700"],
 });
 
 const jetbrainsMono = JetBrains_Mono({
@@ -75,7 +75,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0f1a3d",
+  themeColor: "#1a0b2e",
   width: "device-width",
   initialScale: 1,
 };
@@ -84,7 +84,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="fr"
-      className={`${syne.variable} ${plexSans.variable} ${jetbrainsMono.variable} h-full antialiased`}
+      className={`${bungee.variable} ${sora.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <RegisterServiceWorker />
