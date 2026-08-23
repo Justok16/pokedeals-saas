@@ -179,7 +179,7 @@ export default async function Home() {
           <h2 className="text-center font-display text-xl font-bold text-foreground">
             Sources surveillées
           </h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-3">
             {SOURCES.map((source) => (
               <div key={source.nom} className="rounded-2xl bg-surface p-5 text-center">
                 <p className="text-sm font-semibold text-foreground">{source.nom}</p>
