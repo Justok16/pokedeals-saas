@@ -38,8 +38,13 @@ export default function CGU() {
           Un niveau gratuit permet de surveiller un nombre limité de cartes,
           sans limite de durée et sans moyen de paiement requis. Un
           abonnement payant, résiliable à tout moment, donne accès à une
-          watchlist illimitée. Les tarifs en vigueur sont affichés sur la
-          page d&apos;accueil au moment de la souscription.
+          watchlist illimitée sur les boutiques partenaires. Sur eBay et
+          Vinted, où chaque carte suivie représente une recherche technique
+          distincte, les cartes les plus suivies par l&apos;ensemble des
+          utilisateurs sont priorisées en cas de forte affluence, pour
+          respecter les limites imposées par ces plateformes. Les tarifs en
+          vigueur sont affichés sur la page d&apos;accueil au moment de la
+          souscription.
         </p>
       </section>
 

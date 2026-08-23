@@ -64,6 +64,11 @@ const FAQ = [
     reponse:
       "Par notification push directement dans le navigateur, et/ou par email — les deux canaux sont configurables indépendamment depuis le tableau de bord.",
   },
+  {
+    question: "La watchlist illimitée couvre-t-elle bien toutes les sources ?",
+    reponse:
+      "Oui pour les boutiques partenaires, sans aucune limite de nombre de cartes. Sur eBay et Vinted, où chaque carte représente une recherche distincte, les cartes les plus suivies par l'ensemble des utilisateurs sont priorisées en cas de forte affluence, pour respecter les limites techniques imposées par ces plateformes.",
+  },
 ];
 
 const DONNEES_STRUCTUREES = {
