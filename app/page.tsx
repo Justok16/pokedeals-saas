@@ -79,6 +79,11 @@ const FAQ = [
     reponse:
       "Non. PokéDeals détecte les opportunités au moment du scan. Une annonce peut être vendue, retirée ou modifiée entre deux scans — vérifie toujours l'annonce avant d'acheter.",
   },
+  {
+    question: "C'est quoi PokéPrécoms ?",
+    reponse:
+      "Notre nouveau service sœur : il alerte dès qu'un produit scellé Pokémon TCG (ETB, display, coffret...) passe en précommande réellement disponible, sur les mêmes boutiques que PokéDeals. Si tu es déjà abonné à PokéDeals, le tarif de PokéPrécoms est automatiquement réduit.",
+  },
 ];
 
 const DONNEES_STRUCTUREES = {
@@ -314,6 +319,34 @@ export default async function Home() {
           <p className="text-center text-xs text-muted">
             Aucune carte bancaire requise pour commencer gratuitement.
           </p>
+        </section>
+
+        <section className="w-full">
+          <div className="rounded-2xl bg-gradient-to-br from-cyan to-accent p-[1.5px]">
+            <div className="flex flex-col items-center gap-3 rounded-[15px] bg-surface p-6 text-center sm:flex-row sm:justify-between sm:text-left">
+              <div>
+                <p className="font-mono text-xs uppercase tracking-[0.15em] text-cyan">
+                  Nouveau · Service sœur
+                </p>
+                <h2 className="mt-1 font-display text-lg font-bold text-foreground">
+                  PokéPrécoms
+                </h2>
+                <p className="mt-1 max-w-md text-sm text-muted">
+                  Sois alerté dès qu&apos;un ETB, display ou coffret Pokémon TCG passe en
+                  précommande disponible. Abonné à PokéDeals ? Le tarif y est réduit
+                  automatiquement.
+                </p>
+              </div>
+              <a
+                href="https://pokeprecoms.vercel.app"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="shrink-0 rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-accent-ink transition hover:-translate-y-0.5 hover:brightness-110"
+              >
+                Découvrir PokéPrécoms →
+              </a>
+            </div>
+          </div>
         </section>
 
         <section className="flex w-full flex-col gap-6">

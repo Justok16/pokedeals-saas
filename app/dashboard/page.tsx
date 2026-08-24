@@ -196,6 +196,27 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
           )}
         </section>
 
+        <section className={`${PANNEAU} flex items-center justify-between gap-4`}>
+          <div>
+            <p className="text-sm font-semibold text-foreground">
+              🎁 Découvre PokéPrécoms
+            </p>
+            <p className="mt-1 text-xs text-muted">
+              {abonnementActif
+                ? "Notre nouveau service sœur alerte dès qu'une précommande Pokémon TCG (ETB, display, coffret...) devient disponible. Comme tu es déjà abonné à PokéDeals, ton tarif y est automatiquement réduit."
+                : "Notre nouveau service sœur alerte dès qu'une précommande Pokémon TCG (ETB, display, coffret...) devient disponible — et le tarif est réduit si tu es abonné à PokéDeals."}
+            </p>
+          </div>
+          <a
+            href="https://pokeprecoms.vercel.app"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`${LIEN_DISCRET} shrink-0`}
+          >
+            Découvrir →
+          </a>
+        </section>
+
         <section className={`${PANNEAU} flex flex-col gap-2`}>
           <h2 className="text-sm font-medium text-foreground">Notifications</h2>
           <NotifPush />
