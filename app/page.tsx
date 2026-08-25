@@ -6,7 +6,10 @@ import { NOMBRE_BOUTIQUES } from "@/lib/constantes";
 const SOURCES = [
   { nom: "eBay", detail: "Annonces et enchères" },
   { nom: "Vinted", detail: "Nouvelles annonces particuliers" },
-  { nom: "Boutiques spécialisées", detail: "France 🇫🇷 et Japon 🇯🇵" },
+  {
+    nom: "Boutiques spécialisées",
+    detail: `${NOMBRE_BOUTIQUES} boutiques France 🇫🇷 et Japon 🇯🇵`,
+  },
 ];
 
 const ETAPES = [
@@ -160,6 +163,14 @@ export default async function Home() {
             Configure ta watchlist de cartes Pokémon TCG et reçois une alerte dès
             qu&apos;une bonne affaire tombe en dessous de ton seuil de prix.
           </p>
+          <div className="flex flex-wrap items-center justify-center gap-2 font-mono text-xs">
+            <span className="rounded-full bg-surface px-3 py-1.5 text-foreground">
+              🆓 Gratuit jusqu&apos;à {LIMITE_CARTES_GRATUIT} cartes
+            </span>
+            <span className="rounded-full bg-surface px-3 py-1.5 text-accent">
+              ⭐ Illimité dès 4,99 €/mois
+            </span>
+          </div>
           <Link
             href={user ? "/dashboard" : "/login"}
             className="rounded-full bg-accent px-6 py-3 text-sm font-semibold text-accent-ink shadow-[0_10px_30px_-8px_rgba(255,210,63,0.6)] transition hover:-translate-y-0.5 hover:brightness-110"
