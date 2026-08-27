@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { EARLY_BIRD_COUPON_ID, LIMITE_CARTES_GRATUIT, estTesteurBeta, getStripe } from "@/lib/stripe";
+import { LIMITE_CARTES_GRATUIT, determinerCouponBundle, estTesteurBeta, getStripe } from "@/lib/stripe";
 
 const LANGUES_VALIDES = ["fr", "jp", "en", "kr", "cn"] as const;
 const STATUTS_ABONNEMENT_ACTIF = ["active", "trialing"];
@@ -200,23 +200,17 @@ export async function creerSessionCheckout() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  if (!user || !user.email) redirect("/login");
 
   const stripe = getStripe();
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
-  // Tarif early bird (200 premiers abonnés, verrouillé à vie) : appliqué
-  // automatiquement tant que le coupon Stripe a des redemptions restantes
-  // (coupon.valid passe à false de lui-même une fois max_redemptions
-  // atteint -- Stripe gère le comptage, pas nous). Coupon absent/erreur ->
-  // tarif standard, sans jamais bloquer le checkout.
-  let discounts: { coupon: string }[] | undefined;
-  try {
-    const coupon = await stripe.coupons.retrieve(EARLY_BIRD_COUPON_ID);
-    if (coupon.valid) discounts = [{ coupon: coupon.id }];
-  } catch {
-    // coupon pas encore créé côté dashboard Stripe -- tarif standard
-  }
+  // Geste commercial bundle : reduit automatiquement le prix (2,99€ ->
+  // 1,99€) si ce client a deja un abonnement PokePrecoms actif (meme
+  // coupon Stripe cree a la main, cf. lib/stripe.ts). Aucun coupon
+  // applicable -> tarif plein 2,99€, sans jamais bloquer le checkout.
+  const couponId = await determinerCouponBundle(stripe, user.email);
+  const discounts = couponId ? [{ coupon: couponId }] : undefined;
 
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
