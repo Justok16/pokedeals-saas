@@ -176,7 +176,7 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
                   </div>
                 </div>
                 <p className="font-mono text-xs text-cyan">
-                  Illimité à 4,99 €/mois à vie — offre fondateur, 200 places
+                  Illimité à 2,99 €/mois — 1,99 €/mois si tu as déjà PokéPrécoms
                 </p>
               </div>
             )}
@@ -203,8 +203,8 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
             </p>
             <p className="mt-1 text-xs text-muted">
               {abonnementActif
-                ? "Notre nouveau service sœur alerte dès qu'une précommande Pokémon TCG (ETB, display, coffret...) devient disponible. Comme tu es déjà abonné à PokéDeals, ton tarif y est automatiquement réduit."
-                : "Notre nouveau service sœur alerte dès qu'une précommande Pokémon TCG (ETB, display, coffret...) devient disponible — et le tarif est réduit si tu es abonné à PokéDeals."}
+                ? "Notre service sœur alerte dès qu'une précommande Pokémon TCG (ETB, display, coffret...) devient disponible. Comme tu es déjà abonné à PokéDeals, tu ne paies que 1,99 €/mois en plus si tu t'abonnes."
+                : "Notre service sœur alerte dès qu'une précommande Pokémon TCG (ETB, display, coffret...) devient disponible — 1 alerte gratuite pour essayer, puis 2,99 €/mois (1,99 € si tu es déjà abonné à PokéDeals)."}
             </p>
           </div>
           <a
