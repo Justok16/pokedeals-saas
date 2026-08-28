@@ -1,12 +1,9 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { LIMITE_CARTES_GRATUIT, estTesteurBeta } from "@/lib/stripe";
 import { normaliser } from "@/lib/normaliser";
 import {
   ajouterCarte,
   basculerNotifEmail,
-  creerSessionCheckout,
-  creerSessionPortail,
   deconnexion,
   envoyerFeedback,
   modifierCarte,
@@ -44,14 +41,6 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
     .select("id, nom_carte, langue, prix_seuil, notes, created_at")
     .order("created_at", { ascending: false });
 
-  const { data: abonnement } = await supabase
-    .from("subscriptions")
-    .select("status, current_period_end")
-    .eq("user_id", user.id)
-    .maybeSingle();
-  const abonnementActif =
-    abonnement?.status === "active" || abonnement?.status === "trialing";
-  const testeurBeta = estTesteurBeta(user.email);
   const nombreCartes = cartes?.length ?? 0;
 
   const { data: alertes, error: erreurAlertes } = await supabase
@@ -133,68 +122,11 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
           </div>
         </section>
 
+        <p className="text-center font-mono text-xs text-cyan">
+          🆓 100% gratuit et illimité — surveille autant de cartes que tu veux
+        </p>
+
         {nombreCartes > 0 && <NotifPush banniere />}
-
-        {searchParams.abonnement === "succes" && (
-          <p className="rounded-xl bg-cyan/10 px-4 py-3 text-sm text-cyan">
-            Abonnement activé, merci ! Ça peut prendre quelques secondes à
-            apparaître ci-dessous.
-          </p>
-        )}
-        {searchParams.abonnement === "annule" && (
-          <p className="rounded-xl bg-surface px-4 py-3 text-sm text-muted">
-            Paiement annulé — tu peux réessayer à tout moment.
-          </p>
-        )}
-
-        <section className="flex items-center justify-between gap-4">
-          <div className="flex-1">
-            {testeurBeta ? (
-              <p className="font-mono text-xs text-cyan">
-                Accès testeur — cartes illimitées
-              </p>
-            ) : abonnementActif ? (
-              <p className="font-mono text-xs text-muted">
-                Abonnement actif — cartes illimitées
-                {abonnement?.current_period_end
-                  ? ` · renouvellement le ${new Date(abonnement.current_period_end).toLocaleDateString("fr-FR")}`
-                  : ""}
-              </p>
-            ) : (
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-3">
-                  <p className="font-mono text-xs text-muted">
-                    {nombreCartes}/{LIMITE_CARTES_GRATUIT} cartes gratuites
-                  </p>
-                  <div className="h-1.5 flex-1 max-w-24 overflow-hidden rounded-full bg-line">
-                    <div
-                      className="h-full rounded-full bg-accent transition-all"
-                      style={{
-                        width: `${Math.min(100, (nombreCartes / LIMITE_CARTES_GRATUIT) * 100)}%`,
-                      }}
-                    />
-                  </div>
-                </div>
-                <p className="font-mono text-xs text-cyan">
-                  Illimité à 4,99 €/mois à vie — offre fondateur, 200 places
-                </p>
-              </div>
-            )}
-          </div>
-          {testeurBeta ? null : abonnementActif ? (
-            <form action={creerSessionPortail}>
-              <button type="submit" className={LIEN_DISCRET}>
-                Gérer mon abonnement
-              </button>
-            </form>
-          ) : (
-            <form action={creerSessionCheckout}>
-              <button type="submit" className={BOUTON_PRIMAIRE}>
-                Passer à l&apos;abonnement
-              </button>
-            </form>
-          )}
-        </section>
 
         <section className={`${PANNEAU} flex items-center justify-between gap-4`}>
           <div>
@@ -202,9 +134,9 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
               🎁 Découvre PokéPrécoms
             </p>
             <p className="mt-1 text-xs text-muted">
-              {abonnementActif
-                ? "Notre nouveau service sœur alerte dès qu'une précommande Pokémon TCG (ETB, display, coffret...) devient disponible. Comme tu es déjà abonné à PokéDeals, ton tarif y est automatiquement réduit."
-                : "Notre nouveau service sœur alerte dès qu'une précommande Pokémon TCG (ETB, display, coffret...) devient disponible — et le tarif est réduit si tu es abonné à PokéDeals."}
+              Notre service sœur alerte dès qu&apos;un produit scellé Pokémon
+              TCG (ETB, display, coffret...) passe en précommande disponible
+              — 100% gratuit et illimité, comme ici.
             </p>
           </div>
           <a

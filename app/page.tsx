@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { LIMITE_CARTES_GRATUIT } from "@/lib/stripe";
 import { NOMBRE_BOUTIQUES } from "@/lib/constantes";
 
 const SOURCES = [
@@ -56,7 +55,7 @@ const CONFIANCE = [
 const FAQ = [
   {
     question: "Combien coûte PokéDeals ?",
-    reponse: `Jusqu'à ${LIMITE_CARTES_GRATUIT} cartes surveillées gratuitement, sans limite de durée, sans carte bancaire requise. Au-delà, l'abonnement (watchlist illimitée) est à 4,99 €/mois à vie pour les 200 premiers abonnés fondateurs — 7,99 €/mois ensuite.`,
+    reponse: "Rien. PokéDeals est 100% gratuit et illimité, sans carte bancaire, sans palier caché — surveille autant de cartes que tu veux.",
   },
   {
     question: "Où sont scannées les bonnes affaires ?",
@@ -85,7 +84,7 @@ const FAQ = [
   {
     question: "C'est quoi PokéPrécoms ?",
     reponse:
-      "Notre nouveau service sœur : il alerte dès qu'un produit scellé Pokémon TCG (ETB, display, coffret...) passe en précommande réellement disponible, sur les mêmes boutiques que PokéDeals. Si tu es déjà abonné à PokéDeals, le tarif de PokéPrécoms est automatiquement réduit.",
+      "Notre service sœur : il alerte dès qu'un produit scellé Pokémon TCG (ETB, display, coffret...) passe en précommande réellement disponible, sur les mêmes boutiques que PokéDeals. Lui aussi est 100% gratuit et illimité.",
   },
 ];
 
@@ -103,14 +102,7 @@ const DONNEES_STRUCTUREES = {
       name: "Gratuit",
       price: "0",
       priceCurrency: "EUR",
-      description: `Jusqu'à ${LIMITE_CARTES_GRATUIT} cartes surveillées.`,
-    },
-    {
-      "@type": "Offer",
-      name: "Abonnement",
-      price: "7.99",
-      priceCurrency: "EUR",
-      description: "Watchlist illimitée.",
+      description: "Watchlist illimitée, sans abonnement.",
     },
   ],
 };
@@ -164,11 +156,11 @@ export default async function Home() {
             qu&apos;une bonne affaire tombe en dessous de ton seuil de prix.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-2 font-mono text-xs">
-            <span className="rounded-full bg-surface px-3 py-1.5 text-foreground">
-              🆓 Gratuit jusqu&apos;à {LIMITE_CARTES_GRATUIT} cartes
-            </span>
             <span className="rounded-full bg-surface px-3 py-1.5 text-accent">
-              ⭐ Illimité dès 4,99 €/mois
+              🆓 100% gratuit
+            </span>
+            <span className="rounded-full bg-surface px-3 py-1.5 text-foreground">
+              ⭐ Watchlist illimitée
             </span>
           </div>
           <Link
@@ -177,11 +169,6 @@ export default async function Home() {
           >
             {user ? "Aller à ma watchlist" : "Commencer gratuitement"}
           </Link>
-          {!user && (
-            <p className="font-mono text-xs text-cyan">
-              Watchlist illimitée à 4,99 €/mois à vie — offre fondateur, 200 places
-            </p>
-          )}
         </section>
 
         <section className="w-full max-w-md">
@@ -291,45 +278,18 @@ export default async function Home() {
           <h2 className="text-center font-display text-xl font-bold text-foreground">
             Tarifs
           </h2>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="rounded-2xl bg-surface p-6">
-              <p className="text-sm font-semibold text-foreground">Gratuit</p>
-              <p className="mt-1 font-mono text-2xl font-bold text-foreground">0 €</p>
+          <div className="mx-auto w-full max-w-md rounded-2xl bg-gradient-to-br from-accent to-cyan p-[1.5px]">
+            <div className="rounded-[15px] bg-surface p-6 text-center">
+              <p className="text-sm font-semibold text-foreground">100% gratuit</p>
+              <p className="mt-1 font-mono text-3xl font-bold text-accent">0 €</p>
               <ul className="mt-4 flex flex-col gap-2 text-sm text-muted">
-                <li>{LIMITE_CARTES_GRATUIT} cartes surveillées</li>
+                <li>Watchlist illimitée</li>
                 <li>Alertes push et email</li>
                 <li>Toutes les sources</li>
-                <li>Sans limite de durée</li>
+                <li>Aucune carte bancaire requise</li>
               </ul>
             </div>
-            <div className="rounded-2xl bg-gradient-to-br from-accent to-cyan p-[1.5px]">
-              <div className="h-full rounded-[15px] bg-surface p-6">
-                <span className="inline-block rounded-full bg-accent px-2.5 py-1 font-mono text-[0.65rem] font-bold uppercase tracking-wide text-accent-ink">
-                  Offre fondateur · 200 places
-                </span>
-                <p className="mt-3 text-sm font-semibold text-foreground">Abonnement</p>
-                <p className="mt-1 flex items-baseline gap-2">
-                  <span className="font-mono text-4xl font-bold text-accent">4,99 €</span>
-                  <span className="text-sm font-normal text-muted">/mois</span>
-                </p>
-                <p className="mt-1 text-xs text-cyan">
-                  Prix garanti à vie pour les 200 premiers abonnés, tant que l&apos;abonnement reste actif.
-                </p>
-                <p className="mt-1 text-xs text-muted">
-                  <span className="line-through">7,99 €/mois</span> pour les abonnés suivants, une fois les 200 places prises.
-                </p>
-                <ul className="mt-4 flex flex-col gap-2 text-sm text-muted">
-                  <li>Watchlist illimitée</li>
-                  <li>Alertes push et email</li>
-                  <li>Toutes les sources</li>
-                  <li>Résiliable à tout moment</li>
-                </ul>
-              </div>
-            </div>
           </div>
-          <p className="text-center text-xs text-muted">
-            Aucune carte bancaire requise pour commencer gratuitement.
-          </p>
         </section>
 
         <section className="w-full">
@@ -337,15 +297,14 @@ export default async function Home() {
             <div className="flex flex-col items-center gap-3 rounded-[15px] bg-surface p-6 text-center sm:flex-row sm:justify-between sm:text-left">
               <div>
                 <p className="font-mono text-xs uppercase tracking-[0.15em] text-cyan">
-                  Nouveau · Service sœur
+                  Service sœur
                 </p>
                 <h2 className="mt-1 font-display text-lg font-bold text-foreground">
                   PokéPrécoms
                 </h2>
                 <p className="mt-1 max-w-md text-sm text-muted">
                   Sois alerté dès qu&apos;un ETB, display ou coffret Pokémon TCG passe en
-                  précommande disponible. Abonné à PokéDeals ? Le tarif y est réduit
-                  automatiquement.
+                  précommande disponible. Lui aussi est 100% gratuit et illimité.
                 </p>
               </div>
               <a
