@@ -166,6 +166,9 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
             <button type="submit" className={LIEN_DISCRET}>
               Enregistrer
             </button>
+            {searchParams.notifications === "enregistre" && (
+              <span className="text-xs text-cyan">Enregistré ✓</span>
+            )}
           </form>
         </section>
 
