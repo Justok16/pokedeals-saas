@@ -6,6 +6,18 @@ import { createClient } from "@/lib/supabase/server";
 
 const LANGUES_VALIDES = ["fr", "jp", "en", "kr", "cn"] as const;
 
+// Audit externe du 30/08/2026 : aucune limite cote serveur sur la longueur
+// des champs texte ni le nombre de cartes par utilisateur -- une Server
+// Action est appelable directement (contourne les attributs maxLength/
+// limites visuelles du formulaire), donc la seule vraie barriere est cote
+// serveur. Valeurs choisies larges (jamais genantes pour un usage normal,
+// le service reste "100% gratuit et illimite" affiche sur le dashboard) --
+// uniquement pour eviter un abus grossier (spam, explosion du volume de
+// matching cote scraper).
+const MAX_LONGUEUR_NOM_CARTE = 200;
+const MAX_LONGUEUR_NOTES = 500;
+const MAX_CARTES_PAR_UTILISATEUR = 500;
+
 export async function ajouterCarte(formData: FormData) {
   const supabase = await createClient();
   const {
@@ -23,11 +35,27 @@ export async function ajouterCarte(formData: FormData) {
   if (!nomCarte) {
     throw new Error("Le nom de la carte est requis.");
   }
+  if (nomCarte.length > MAX_LONGUEUR_NOM_CARTE) {
+    throw new Error(`Le nom de la carte est trop long (${MAX_LONGUEUR_NOM_CARTE} caractères maximum).`);
+  }
+  if (notes && notes.length > MAX_LONGUEUR_NOTES) {
+    throw new Error(`Les notes sont trop longues (${MAX_LONGUEUR_NOTES} caractères maximum).`);
+  }
   if (!Number.isFinite(prixSeuil) || prixSeuil < 0) {
     throw new Error("Le seuil de prix doit être un nombre positif.");
   }
   if (!LANGUES_VALIDES.includes(langue as (typeof LANGUES_VALIDES)[number])) {
     throw new Error("Langue invalide.");
+  }
+
+  const { count } = await supabase
+    .from("watchlist_items")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", user.id);
+  if ((count ?? 0) >= MAX_CARTES_PAR_UTILISATEUR) {
+    throw new Error(
+      `Limite de ${MAX_CARTES_PAR_UTILISATEUR} cartes surveillées atteinte -- retire-en une avant d'en ajouter une nouvelle.`
+    );
   }
 
   const { error } = await supabase.from("watchlist_items").insert({
@@ -61,6 +89,12 @@ export async function modifierCarte(formData: FormData) {
   if (!id) return;
   if (!nomCarte) {
     throw new Error("Le nom de la carte est requis.");
+  }
+  if (nomCarte.length > MAX_LONGUEUR_NOM_CARTE) {
+    throw new Error(`Le nom de la carte est trop long (${MAX_LONGUEUR_NOM_CARTE} caractères maximum).`);
+  }
+  if (notes && notes.length > MAX_LONGUEUR_NOTES) {
+    throw new Error(`Les notes sont trop longues (${MAX_LONGUEUR_NOTES} caractères maximum).`);
   }
   if (!Number.isFinite(prixSeuil) || prixSeuil < 0) {
     throw new Error("Le seuil de prix doit être un nombre positif.");
