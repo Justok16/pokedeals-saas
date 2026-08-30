@@ -68,10 +68,36 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
 
   // Prix marché (cote calculée par le scraper, cf. moteur_cote.obtenir_cote
   // côté Python) : donnée de marché, pas personnelle -- accessible à tout
-  // utilisateur authentifié (cf. migration 0005_market_cotes.sql).
-  const { data: cotesMarche } = await supabase
-    .from("market_cotes")
-    .select("nom_norm, langue, cote");
+  // utilisateur authentifié (cf. migration 0005_market_cotes.sql). Audit
+  // externe du 30/08/2026 : cette requête chargeait TOUTE la table sans
+  // filtre (viable à quelques centaines de lignes, mais ça grossirait à
+  // chaque carte scannée par le scraper) -- ne récupère maintenant que les
+  // cotes des cartes/langues réellement affichées sur CETTE page (watchlist
+  // + 20 dernières alertes). Le croisement nom_norm × langue via deux .in()
+  // peut ramener quelques lignes en trop (produit cartésien, pas une
+  // correspondance exacte par paire) mais reste minime pour un utilisateur
+  // donné, très loin de la table entière.
+  const nomsNormalisesVoulus = new Set<string>();
+  const languesVoulues = new Set<string>();
+  for (const carte of cartes ?? []) {
+    nomsNormalisesVoulus.add(normaliser(carte.nom_carte));
+    languesVoulues.add(carte.langue.toLowerCase());
+  }
+  for (const alerte of alertes ?? []) {
+    const item = alerte.watchlist_items?.[0];
+    if (item) {
+      nomsNormalisesVoulus.add(normaliser(item.nom_carte));
+      languesVoulues.add(item.langue.toLowerCase());
+    }
+  }
+  const { data: cotesMarche } =
+    nomsNormalisesVoulus.size > 0
+      ? await supabase
+          .from("market_cotes")
+          .select("nom_norm, langue, cote")
+          .in("nom_norm", Array.from(nomsNormalisesVoulus))
+          .in("langue", Array.from(languesVoulues))
+      : { data: [] };
   const coteParCle = new Map(
     (cotesMarche ?? []).map((c) => [`${c.nom_norm}|${c.langue}`, Number(c.cote)])
   );
