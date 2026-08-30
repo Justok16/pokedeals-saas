@@ -33,46 +33,33 @@ export default function CGU() {
       </section>
 
       <section className="flex flex-col gap-2">
-        <h2 className="text-sm font-semibold text-foreground">3. Offres et tarifs</h2>
+        <h2 className="text-sm font-semibold text-foreground">3. Offre et tarifs</h2>
         <p className="text-sm text-muted">
-          Un niveau gratuit permet de surveiller un nombre limité de cartes,
-          sans limite de durée et sans moyen de paiement requis. Un
-          abonnement payant, résiliable à tout moment, donne accès à une
-          watchlist illimitée sur les boutiques partenaires. Sur eBay et
-          Vinted, où chaque carte suivie représente une recherche technique
-          distincte, les cartes les plus suivies par l&apos;ensemble des
-          utilisateurs sont priorisées en cas de forte affluence, pour
-          respecter les limites imposées par ces plateformes. Les tarifs en
-          vigueur sont affichés sur la page d&apos;accueil au moment de la
-          souscription.
+          Le service est 100% gratuit et illimité : aucun abonnement, aucune
+          carte bancaire, aucun palier payant. Sur eBay et Vinted, où chaque
+          carte suivie représente une recherche technique distincte, les
+          cartes les plus suivies par l&apos;ensemble des utilisateurs
+          peuvent être priorisées en cas de forte affluence, pour respecter
+          les limites imposées par ces plateformes — ceci n&apos;affecte
+          jamais les boutiques partenaires, scannées intégralement à chaque
+          cycle quel que soit le nombre d&apos;utilisateurs.
+        </p>
+      </section>
+
+      <section className="flex flex-col gap-2">
+        <h2 className="text-sm font-semibold text-foreground">4. Résiliation du compte</h2>
+        <p className="text-sm text-muted">
+          Le service étant gratuit, il n&apos;y a rien à résilier au sens
+          d&apos;un abonnement payant. L&apos;utilisateur peut cesser
+          d&apos;utiliser le service à tout moment en se déconnectant, ou
+          demander la suppression de son compte et des données associées via
+          le contact ci-dessous.
         </p>
       </section>
 
       <section className="flex flex-col gap-2">
         <h2 className="text-sm font-semibold text-foreground">
-          4. Droit de rétractation
-        </h2>
-        <p className="text-sm text-muted">
-          Conformément à l&apos;article L221-28 du Code de la consommation,
-          l&apos;abonnement étant un contenu numérique fourni immédiatement
-          après paiement, l&apos;utilisateur renonce expressément à son droit
-          de rétractation de 14 jours en validant la souscription.
-        </p>
-      </section>
-
-      <section className="flex flex-col gap-2">
-        <h2 className="text-sm font-semibold text-foreground">5. Résiliation</h2>
-        <p className="text-sm text-muted">
-          L&apos;abonnement peut être résilié à tout moment depuis le
-          tableau de bord (« Gérer mon abonnement »). La résiliation prend
-          effet à la fin de la période déjà payée ; aucun remboursement au
-          prorata n&apos;est effectué.
-        </p>
-      </section>
-
-      <section className="flex flex-col gap-2">
-        <h2 className="text-sm font-semibold text-foreground">
-          6. Responsabilité
+          5. Responsabilité
         </h2>
         <p className="text-sm text-muted">
           Les informations de prix affichées proviennent de plateformes et
@@ -85,7 +72,7 @@ export default function CGU() {
       </section>
 
       <section className="flex flex-col gap-2">
-        <h2 className="text-sm font-semibold text-foreground">7. Contact</h2>
+        <h2 className="text-sm font-semibold text-foreground">6. Contact</h2>
         <p className="text-sm text-muted">
           Pour toute question relative à ces conditions : [ton adresse
           email].

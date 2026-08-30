@@ -43,7 +43,7 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
 
   const nombreCartes = cartes?.length ?? 0;
 
-  const { data: alertes, error: erreurAlertes } = await supabase
+  const { data: alertesBrutes, error: erreurAlertes } = await supabase
     .from("watchlist_alerts")
     .select("id, titre, prix, url, plateforme, created_at, watchlist_items(nom_carte, langue, prix_seuil)")
     .order("created_at", { ascending: false })
@@ -53,8 +53,28 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
     .from("watchlist_alerts")
     .select("id", { count: "exact", head: true });
 
-  const economieRecente = (alertes ?? []).reduce((total, alerte) => {
-    const seuil = alerte.watchlist_items?.[0]?.prix_seuil;
+  // Audit du 30/08/2026 : `watchlist_item_id` est une clé étrangère
+  // many-to-one (watchlist_alerts -> watchlist_items) -- PostgREST renvoie
+  // donc `watchlist_items` comme un OBJET unique au moment de l'exécution,
+  // jamais un tableau. Sans types `Database` générés, supabase-js infère
+  // pourtant un type tableau par défaut pour TOUT embed (il ne peut pas
+  // déduire la cardinalité réelle de la simple chaîne .select()) -- le code
+  // accédait donc à `?.[0]` sur un objet qui n'a jamais de clé "0",
+  // toujours `undefined` (chaînage optionnel, jamais d'erreur), donc
+  // silencieusement faux plutôt qu'un crash visible. Conséquence réelle :
+  // `economieRecente` ("Économies récentes") affichait toujours 0,00 € pour
+  // tout le monde, et le badge de décote + le nom canonique de la carte
+  // (ci-dessous) ne s'affichaient jamais. Corrigé une seule fois ici (pas
+  // de types `Database` générés dans ce dépôt) plutôt que de disperser des
+  // casts sur chaque site d'usage.
+  type ItemEmbedde = { nom_carte: string; langue: string; prix_seuil: number } | null;
+  const alertes = (alertesBrutes ?? []).map((a) => ({
+    ...a,
+    watchlist_items: a.watchlist_items as unknown as ItemEmbedde,
+  }));
+
+  const economieRecente = alertes.reduce((total, alerte) => {
+    const seuil = alerte.watchlist_items?.prix_seuil;
     if (seuil == null) return total;
     return total + Math.max(0, Number(seuil) - Number(alerte.prix));
   }, 0);
@@ -83,8 +103,8 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
     nomsNormalisesVoulus.add(normaliser(carte.nom_carte));
     languesVoulues.add(carte.langue.toLowerCase());
   }
-  for (const alerte of alertes ?? []) {
-    const item = alerte.watchlist_items?.[0];
+  for (const alerte of alertes) {
+    const item = alerte.watchlist_items;
     if (item) {
       nomsNormalisesVoulus.add(normaliser(item.nom_carte));
       languesVoulues.add(item.langue.toLowerCase());
@@ -331,15 +351,15 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
             </p>
           )}
 
-          {!erreurAlertes && alertes?.length === 0 && (
+          {!erreurAlertes && alertes.length === 0 && (
             <p className="text-sm text-muted">
               Aucune alerte pour l&apos;instant — dès qu&apos;une carte de ta
               watchlist tombe sous ton seuil de prix, elle apparaîtra ici.
             </p>
           )}
 
-          {alertes?.map((alerte) => {
-            const item = alerte.watchlist_items?.[0];
+          {alertes.map((alerte) => {
+            const item = alerte.watchlist_items;
             const cote = item ? coteMarche(item.nom_carte, item.langue) : undefined;
             const seuil = item?.prix_seuil != null ? Number(item.prix_seuil) : null;
             const reference = cote ?? seuil;
@@ -358,7 +378,7 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
               >
                 <div>
                   <p className="text-sm font-medium text-foreground">
-                    {alerte.watchlist_items?.[0]?.nom_carte ?? alerte.titre}
+                    {alerte.watchlist_items?.nom_carte ?? alerte.titre}
                   </p>
                   <p className="text-xs text-muted">
                     {alerte.titre}

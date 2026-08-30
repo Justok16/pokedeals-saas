@@ -1,7 +1,11 @@
 "use client";
 
 import { useEffect, useState, useSyncExternalStore } from "react";
-import { enregistrerAbonnementPush, supprimerAbonnementPush } from "./actions";
+import {
+  abonnementPushAppartientAUtilisateur,
+  enregistrerAbonnementPush,
+  supprimerAbonnementPush,
+} from "./actions";
 
 function urlBase64ToUint8Array(base64: string) {
   const padding = "=".repeat((4 - (base64.length % 4)) % 4);
@@ -62,7 +66,23 @@ function lancerVerificationInitiale() {
   }
   navigator.serviceWorker.ready.then(async (registration) => {
     const subscription = await registration.pushManager.getSubscription();
-    definirEtat(subscription ? "actif" : "inactif");
+    if (!subscription) {
+      definirEtat("inactif");
+      return;
+    }
+    // Audit du 30/08/2026 (appareil partagé) : un abonnement navigateur
+    // existant ne veut pas dire qu'il appartient à l'utilisateur
+    // ACTUELLEMENT connecté (ex. l'utilisateur précédent ne s'est pas
+    // désabonné avant de se déconnecter) -- on vérifie côté serveur avant
+    // d'afficher "actif", et on désabonne le navigateur si ce n'est pas le
+    // cas pour ne pas rester bloqué en faux "actif" indéfiniment.
+    const appartientAMoi = await abonnementPushAppartientAUtilisateur(subscription.endpoint);
+    if (!appartientAMoi) {
+      await subscription.unsubscribe().catch(() => {});
+      definirEtat("inactif");
+      return;
+    }
+    definirEtat("actif");
   });
 }
 
