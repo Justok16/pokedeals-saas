@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Non authentifié." }, { status: 401 });
   }
 
-  let body: { endpoint?: string; keys?: { p256dh?: string; auth?: string } };
+  let body: { endpoint?: string; keys?: { p256dh?: string; auth?: string }; oldEndpoint?: string };
   try {
     body = await request.json();
   } catch {
@@ -44,5 +44,20 @@ export async function POST(request: NextRequest) {
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+
+  // Audit du 31/08/2026 : purge l'ANCIENNE ligne (ancien endpoint, envoyé
+  // par le service worker via event.oldSubscription) sans quoi elle
+  // s'accumule à chaque rotation d'endpoint -- le scraper continuerait
+  // indéfiniment à tenter d'envoyer des push vers un endpoint mort. Best-
+  // effort : une erreur ici ne doit jamais faire échouer la re-souscription
+  // elle-même (déjà réussie ci-dessus).
+  if (body.oldEndpoint) {
+    await supabase
+      .from("push_subscriptions")
+      .delete()
+      .eq("endpoint", body.oldEndpoint)
+      .eq("user_id", user.id);
+  }
+
   return NextResponse.json({ ok: true });
 }
