@@ -27,6 +27,14 @@ const LIEN_DISCRET =
   "text-xs text-muted underline-offset-4 hover:text-foreground hover:underline";
 const PANNEAU = "rounded-2xl bg-surface p-5 shadow-[0_1px_0_rgba(255,255,255,0.03)_inset]";
 
+// Renforcement défensif (31/08/2026, signalement direct de l'utilisateur --
+// préférence email "recochée" à chaque visite) : force un rendu dynamique
+// systématique, sans AUCUNE mise en cache possible côté Next.js pour cette
+// page. La lecture de cookies (auth.getUser()) le forçait déjà implicitement,
+// mais le rendre explicite élimine toute ambiguïté sur ce point précis --
+// cette page ne doit jamais servir une préférence utilisateur périmée.
+export const dynamic = "force-dynamic";
+
 export default async function DashboardPage(props: PageProps<"/dashboard">) {
   const searchParams = await props.searchParams;
   const supabase = await createClient();
