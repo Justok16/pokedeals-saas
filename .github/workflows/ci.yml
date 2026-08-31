@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+# Ajouté le 31/08/2026 : ce repo n'avait jusqu'ici AUCUNE vérification
+# automatisée (pas de CI du tout) -- toute régression ne pouvait être
+# détectée qu'au prochain passage manuel. Vérifie uniquement ce qui est
+# gratuit et rapide (typecheck + lint, pas de suite de tests dans ce repo) ;
+# n'a besoin que de lire le code, pas d'écriture sur GITHUB_TOKEN.
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+      - name: Installer Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+      - name: Installer les dépendances
+        run: npm ci
+      - name: Générer les types de routes Next.js
+        # Sans ça, tsc échoue sur un checkout propre : PageProps/LayoutProps
+        # (référencés via .next/types dans tsconfig.json) ne sont générés
+        # que par `next build` ou, ici, la commande légère `next typegen`
+        # (pas de build complet, pas de variables d'env nécessaires).
+        run: npx next typegen
+      - name: Vérification des types (TypeScript)
+        run: npx tsc --noEmit
+      - name: Lint (ESLint)
+        run: npm run lint
