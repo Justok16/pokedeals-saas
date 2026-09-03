@@ -5,9 +5,11 @@ import {
   ajouterCarte,
   basculerNotifEmail,
   deconnexion,
+  definirAlerteTraitee,
   envoyerFeedback,
   modifierCarte,
   supprimerCarte,
+  toggleActifCarte,
 } from "./actions";
 import NotifPush from "./notif-push";
 
@@ -44,24 +46,45 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
 
   if (!user) redirect("/login");
 
-  const { data: cartes, error } = await supabase
-    .from("watchlist_items")
-    .select("id, nom_carte, langue, prix_seuil, notes, created_at")
-    .order("created_at", { ascending: false });
+  // Audit externe du 03/09/2026 : `cartes`, `alertes`+leur count, et
+  // `preferences` sont trois requêtes mutuellement indépendantes (aucune ne
+  // lit le résultat d'une autre) mais s'exécutaient en série -- chacune
+  // payait le round-trip réseau complet avant que la suivante démarre.
+  // Promise.all les lance en parallèle. `cotesMarche` (plus bas) dépend en
+  // revanche réellement des noms de cartes/langues obtenus ici et reste
+  // donc séquentielle, après ce Promise.all.
+  //
+  // `alertesBrutes` + `nombreAlertesTotal` : auparavant deux requêtes
+  // séparées vers la même table (mêmes lignes filtrées par RLS), l'une pour
+  // les 50 dernières lignes, l'autre juste pour le count exact. supabase-js
+  // renvoie le count exact total (avant troncature) sur la MÊME requête que
+  // le select limité -- `.limit(50)` ne l'affecte pas -- donc un seul
+  // round-trip suffit pour les deux.
+  const [
+    { data: cartes, error },
+    { data: alertesBrutes, error: erreurAlertes, count: nombreAlertesTotal },
+    { data: preferences, error: erreurPreferences },
+  ] = await Promise.all([
+    supabase
+      .from("watchlist_items")
+      .select("id, nom_carte, langue, prix_seuil, notes, created_at, actif")
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("watchlist_alerts")
+      .select(
+        "id, titre, prix, url, plateforme, created_at, disponible, prix_verifie, derniere_verification, traitee_par_utilisateur, watchlist_items(nom_carte, langue, prix_seuil)",
+        { count: "exact" }
+      )
+      .order("created_at", { ascending: false })
+      .limit(50),
+    supabase
+      .from("user_preferences")
+      .select("notif_email")
+      .eq("user_id", user.id)
+      .maybeSingle(),
+  ]);
 
   const nombreCartes = cartes?.length ?? 0;
-
-  const { data: alertesBrutes, error: erreurAlertes } = await supabase
-    .from("watchlist_alerts")
-    .select(
-      "id, titre, prix, url, plateforme, created_at, disponible, prix_verifie, derniere_verification, watchlist_items(nom_carte, langue, prix_seuil)"
-    )
-    .order("created_at", { ascending: false })
-    .limit(50);
-
-  const { count: nombreAlertesTotal } = await supabase
-    .from("watchlist_alerts")
-    .select("id", { count: "exact", head: true });
 
   // Audit du 30/08/2026 : `watchlist_item_id` est une clé étrangère
   // many-to-one (watchlist_alerts -> watchlist_items) -- PostgREST renvoie
@@ -89,11 +112,26 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
     return total + Math.max(0, Number(seuil) - Number(alerte.prix));
   }, 0);
 
-  const { data: preferences } = await supabase
-    .from("user_preferences")
-    .select("notif_email")
-    .eq("user_id", user.id)
-    .maybeSingle();
+  // Demande explicite de Justok (03/09/2026) : une alerte "traitée" reste en
+  // base (aucune suppression, cf. migration 0014) mais disparaît de la vue
+  // par défaut -- `?alertes=toutes` la fait réapparaître. `null` et `false`
+  // sont tous deux considérés comme "non traitée" (cf. commentaire de la
+  // migration).
+  const voirAlertesTraitees = searchParams.alertes === "toutes";
+  const alertesAffichees = voirAlertesTraitees
+    ? alertes
+    : alertes.filter((alerte) => !alerte.traitee_par_utilisateur);
+
+  // Audit externe du 03/09/2026 : l'erreur de cette requête n'était jamais
+  // vérifiée -- en cas d'échec (RLS, panne réseau côté Supabase...) le
+  // fallback silencieux `?? true` masquait totalement le problème : rien ne
+  // distinguait "l'utilisateur n'a jamais réglé sa préférence" (cas normal,
+  // notif_email absent) d'un vrai échec de requête. Un simple log serveur
+  // rend l'échec visible dans les logs Vercel au lieu de se faire passer
+  // pour une absence de données.
+  if (erreurPreferences) {
+    console.error("[dashboard] Échec du chargement de user_preferences :", erreurPreferences);
+  }
   const notifEmailActive = preferences?.notif_email ?? true;
 
   // Prix marché (cote calculée par le scraper, cf. moteur_cote.obtenir_cote
@@ -120,14 +158,21 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
       languesVoulues.add(item.langue.toLowerCase());
     }
   }
-  const { data: cotesMarche } =
+  const { data: cotesMarche, error: erreurCotesMarche } =
     nomsNormalisesVoulus.size > 0
       ? await supabase
           .from("market_cotes")
           .select("nom_norm, langue, cote")
           .in("nom_norm", Array.from(nomsNormalisesVoulus))
           .in("langue", Array.from(languesVoulues))
-      : { data: [] };
+      : { data: [], error: null };
+  // Audit externe du 03/09/2026 : même problème que `preferences` ci-dessus
+  // -- une erreur ici retombait silencieusement sur une Map vide (aucune
+  // cote affichée), indiscernable du cas normal "pas encore de cote connue
+  // pour ces cartes". Log serveur pour rendre un échec réel visible.
+  if (erreurCotesMarche) {
+    console.error("[dashboard] Échec du chargement de market_cotes :", erreurCotesMarche);
+  }
   const coteParCle = new Map(
     (cotesMarche ?? []).map((c) => [`${c.nom_norm}|${c.langue}`, Number(c.cote)])
   );
@@ -282,12 +327,23 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
             return (
             <details
               key={carte.id}
-              className="rounded-xl bg-surface transition hover:bg-surface-hover"
+              className={`rounded-xl bg-surface transition hover:bg-surface-hover ${
+                carte.actif ? "" : "opacity-50"
+              }`}
             >
               <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3">
-                <span className="h-2 w-2 shrink-0 rounded-full bg-accent" />
+                <span
+                  className={`h-2 w-2 shrink-0 rounded-full ${
+                    carte.actif ? "bg-accent" : "bg-muted"
+                  }`}
+                />
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-foreground">{carte.nom_carte}</p>
+                  <p className="text-sm font-medium text-foreground">
+                    {carte.nom_carte}
+                    {!carte.actif && (
+                      <span className="ml-2 font-mono text-xs text-muted">(en pause)</span>
+                    )}
+                  </p>
                   <p className="font-mono text-xs text-muted">
                     {LABELS_LANGUE[carte.langue] ?? carte.langue} · seuil{" "}
                     {Number(carte.prix_seuil).toFixed(2)} €
@@ -331,17 +387,28 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
                     placeholder="Notes (optionnel)"
                     className={`${CHAMP} sm:col-span-2`}
                   />
-                  <div className="flex items-center justify-between sm:col-span-2">
+                  <div className="flex items-center justify-between gap-3 sm:col-span-2">
                     <button type="submit" className={BOUTON_PRIMAIRE}>
                       Enregistrer
                     </button>
-                    <button
-                      type="submit"
-                      formAction={supprimerCarte}
-                      className="text-xs text-danger hover:underline"
-                    >
-                      Retirer
-                    </button>
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="submit"
+                        formAction={toggleActifCarte}
+                        name="actif"
+                        value={carte.actif ? "false" : "true"}
+                        className={LIEN_DISCRET}
+                      >
+                        {carte.actif ? "Mettre en pause" : "Réactiver"}
+                      </button>
+                      <button
+                        type="submit"
+                        formAction={supprimerCarte}
+                        className="text-xs text-danger hover:underline"
+                      >
+                        Retirer
+                      </button>
+                    </div>
                   </div>
                 </form>
               </div>
@@ -351,9 +418,21 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
         </section>
 
         <section className="flex flex-col gap-2">
-          <h2 className="text-sm font-medium text-foreground">
-            Dernières bonnes affaires détectées
-          </h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-medium text-foreground">
+              Dernières bonnes affaires détectées
+            </h2>
+            {alertes.some((a) => a.traitee_par_utilisateur) && (
+              <a
+                href={voirAlertesTraitees ? "/dashboard" : "/dashboard?alertes=toutes"}
+                className={LIEN_DISCRET}
+              >
+                {voirAlertesTraitees
+                  ? "Masquer les alertes traitées"
+                  : "Voir les alertes traitées"}
+              </a>
+            )}
+          </div>
 
           {erreurAlertes && (
             <p className="text-sm text-danger">
@@ -361,14 +440,15 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
             </p>
           )}
 
-          {!erreurAlertes && alertes.length === 0 && (
+          {!erreurAlertes && alertesAffichees.length === 0 && (
             <p className="text-sm text-muted">
-              Aucune alerte pour l&apos;instant — dès qu&apos;une carte de ta
-              watchlist tombe sous ton seuil de prix, elle apparaîtra ici.
+              {alertes.length === 0
+                ? "Aucune alerte pour l'instant — dès qu'une carte de ta watchlist tombe sous ton seuil de prix, elle apparaîtra ici."
+                : "Aucune alerte non traitée pour l'instant."}
             </p>
           )}
 
-          {alertes.map((alerte) => {
+          {alertesAffichees.map((alerte) => {
             const item = alerte.watchlist_items;
             const cote = item ? coteMarche(item.nom_carte, item.langue) : undefined;
             const seuil = item?.prix_seuil != null ? Number(item.prix_seuil) : null;
@@ -379,55 +459,77 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
                 : null;
             const libelle = cote != null ? "sous la cote marché" : "sous ton seuil";
             return (
-              <a
+              <div
                 key={alerte.id}
-                href={alerte.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-between rounded-xl bg-surface px-4 py-3 transition hover:-translate-y-0.5 hover:bg-surface-hover hover:shadow-[0_10px_24px_-14px_var(--cyan)]"
+                className={`flex items-center gap-2 rounded-xl bg-surface px-4 py-3 transition hover:bg-surface-hover ${
+                  alerte.traitee_par_utilisateur ? "opacity-50" : ""
+                }`}
               >
-                <div>
-                  <p className="text-sm font-medium text-foreground">
-                    {alerte.watchlist_items?.nom_carte ?? alerte.titre}
-                  </p>
-                  <p className="text-xs text-muted">
-                    {alerte.titre}
-                    {alerte.plateforme ? ` · ${alerte.plateforme}` : ""}
-                  </p>
-                  {alerte.derniere_verification != null && (
-                    <p
-                      className={`mt-1 text-xs font-medium ${
-                        alerte.disponible ? "text-cyan" : "text-danger"
-                      }`}
-                    >
-                      {alerte.disponible
-                        ? `Toujours disponible${
-                            alerte.prix_verifie != null
-                              ? ` à ${Number(alerte.prix_verifie).toFixed(2)} €`
-                              : ""
-                          }`
-                        : "Probablement vendu / indisponible"}
+                <a
+                  href={alerte.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex flex-1 items-center justify-between gap-3 hover:-translate-y-0.5 hover:shadow-[0_10px_24px_-14px_var(--cyan)]"
+                >
+                  <div>
+                    <p className="text-sm font-medium text-foreground">
+                      {alerte.watchlist_items?.nom_carte ?? alerte.titre}
                     </p>
-                  )}
-                </div>
-                <div className="flex items-center gap-3">
-                  {pourcentage != null && pourcentage > 0 && (
-                    <span
-                      title={`${pourcentage}% ${libelle}`}
-                      className={`rounded-full px-2 py-0.5 font-mono text-xs font-semibold ${
-                        pourcentage >= 15
-                          ? "bg-cyan/15 text-cyan"
-                          : "bg-accent/15 text-accent"
-                      }`}
-                    >
-                      −{pourcentage}%
-                    </span>
-                  )}
-                  <p className="font-mono text-lg font-semibold text-accent">
-                    {Number(alerte.prix).toFixed(2)} €
-                  </p>
-                </div>
-              </a>
+                    <p className="text-xs text-muted">
+                      {alerte.titre}
+                      {alerte.plateforme ? ` · ${alerte.plateforme}` : ""}
+                    </p>
+                    {alerte.derniere_verification != null && (
+                      <p
+                        className={`mt-1 text-xs font-medium ${
+                          alerte.disponible ? "text-cyan" : "text-danger"
+                        }`}
+                      >
+                        {alerte.disponible
+                          ? `Toujours disponible${
+                              alerte.prix_verifie != null
+                                ? ` à ${Number(alerte.prix_verifie).toFixed(2)} €`
+                                : ""
+                            }`
+                          : "Probablement vendu / indisponible"}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {pourcentage != null && pourcentage > 0 && (
+                      <span
+                        title={`${pourcentage}% ${libelle}`}
+                        className={`rounded-full px-2 py-0.5 font-mono text-xs font-semibold ${
+                          pourcentage >= 15
+                            ? "bg-cyan/15 text-cyan"
+                            : "bg-accent/15 text-accent"
+                        }`}
+                      >
+                        −{pourcentage}%
+                      </span>
+                    )}
+                    <p className="font-mono text-lg font-semibold text-accent">
+                      {Number(alerte.prix).toFixed(2)} €
+                    </p>
+                  </div>
+                </a>
+                <form action={definirAlerteTraitee}>
+                  <input type="hidden" name="id" value={alerte.id} />
+                  <button
+                    type="submit"
+                    name="traitee"
+                    value={alerte.traitee_par_utilisateur ? "false" : "true"}
+                    title={
+                      alerte.traitee_par_utilisateur
+                        ? "Marquer comme non traitée"
+                        : "Marquer comme traitée"
+                    }
+                    className={`${LIEN_DISCRET} shrink-0`}
+                  >
+                    {alerte.traitee_par_utilisateur ? "↺" : "✓"}
+                  </button>
+                </form>
+              </div>
             );
           })}
         </section>
