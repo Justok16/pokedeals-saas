@@ -57,7 +57,7 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
       "id, titre, prix, url, plateforme, created_at, disponible, prix_verifie, derniere_verification, watchlist_items(nom_carte, langue, prix_seuil)"
     )
     .order("created_at", { ascending: false })
-    .limit(20);
+    .limit(50);
 
   const { count: nombreAlertesTotal } = await supabase
     .from("watchlist_alerts")
