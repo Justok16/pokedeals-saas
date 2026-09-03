@@ -53,7 +53,9 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
 
   const { data: alertesBrutes, error: erreurAlertes } = await supabase
     .from("watchlist_alerts")
-    .select("id, titre, prix, url, plateforme, created_at, watchlist_items(nom_carte, langue, prix_seuil)")
+    .select(
+      "id, titre, prix, url, plateforme, created_at, disponible, prix_verifie, derniere_verification, watchlist_items(nom_carte, langue, prix_seuil)"
+    )
     .order("created_at", { ascending: false })
     .limit(20);
 
@@ -392,6 +394,21 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
                     {alerte.titre}
                     {alerte.plateforme ? ` · ${alerte.plateforme}` : ""}
                   </p>
+                  {alerte.derniere_verification != null && (
+                    <p
+                      className={`mt-1 text-xs font-medium ${
+                        alerte.disponible ? "text-cyan" : "text-danger"
+                      }`}
+                    >
+                      {alerte.disponible
+                        ? `Toujours disponible${
+                            alerte.prix_verifie != null
+                              ? ` à ${Number(alerte.prix_verifie).toFixed(2)} €`
+                              : ""
+                          }`
+                        : "Probablement vendu / indisponible"}
+                    </p>
+                  )}
                 </div>
                 <div className="flex items-center gap-3">
                   {pourcentage != null && pourcentage > 0 && (
