@@ -17,6 +17,15 @@ const LANGUES_VALIDES = ["fr", "jp", "en", "kr", "cn"] as const;
 const MAX_LONGUEUR_NOM_CARTE = 200;
 const MAX_LONGUEUR_NOTES = 500;
 const MAX_CARTES_PAR_UTILISATEUR = 500;
+// Audit externe du 03/09/2026 : envoyerFeedback n'avait aucune limite de
+// frequence, contrairement a ajouterCarte (MAX_CARTES_PAR_UTILISATEUR
+// ci-dessus) -- une Server Action est appelable directement (independamment
+// de toute limite visuelle du formulaire), donc un envoi repete en boucle
+// pouvait spammer sans aucun frein serveur. Valeur large (jamais genante
+// pour un vrai retour utilisateur) -- uniquement pour eviter un abus
+// grossier. Necessite une policy select dediee sur `feedback` (migration
+// 0015_feedback_select_own.sql) pour pouvoir compter ses propres envois.
+const MAX_FEEDBACK_PAR_JOUR = 20;
 
 export async function ajouterCarte(formData: FormData) {
   const supabase = await createClient();
@@ -252,6 +261,18 @@ export async function envoyerFeedback(formData: FormData) {
     throw new Error("Le message est trop long (2000 caractères maximum).");
   }
 
+  const depuis24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const { count } = await supabase
+    .from("feedback")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", user.id)
+    .gte("created_at", depuis24h);
+  if ((count ?? 0) >= MAX_FEEDBACK_PAR_JOUR) {
+    throw new Error(
+      `Limite de ${MAX_FEEDBACK_PAR_JOUR} messages par jour atteinte -- réessaie demain.`
+    );
+  }
+
   const { error } = await supabase.from("feedback").insert({
     user_id: user.id,
     message,
@@ -261,4 +282,67 @@ export async function envoyerFeedback(formData: FormData) {
   }
 
   redirect("/dashboard?feedback=envoye");
+}
+
+// Demande explicite de Justok (03/09/2026) : "mettre en pause" une carte
+// surveillee sans la supprimer (cf. migration 0013_watchlist_items_actif.sql).
+// La nouvelle valeur est fournie directement par le bouton cliquant (name/
+// value du <button>, cf. app/dashboard/page.tsx) -- pas besoin d'une
+// lecture prealable pour connaitre l'etat courant a inverser.
+export async function toggleActifCarte(formData: FormData) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const id = String(formData.get("id") ?? "");
+  const actif = formData.get("actif") === "true";
+  if (!id) return;
+
+  // RLS s'assure déjà qu'un utilisateur ne peut modifier que ses propres
+  // lignes -- le filtre user_id ici est une défense en profondeur.
+  const { error } = await supabase
+    .from("watchlist_items")
+    .update({ actif })
+    .eq("id", id)
+    .eq("user_id", user.id);
+
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/dashboard");
+}
+
+// Demande explicite de Justok (03/09/2026) : marquer une alerte comme
+// "traitee" (vue/decidee) sans la supprimer, pour l'exclure de la liste par
+// defaut (cf. migration 0014_watchlist_alerts_traitee.sql). Cette action ne
+// touche QUE la colonne `traitee_par_utilisateur` -- c'est la seule que le
+// GRANT UPDATE de la migration autorise pour un utilisateur authentifie,
+// toutes les autres colonnes de watchlist_alerts restant reservees au
+// scraper (service_role). Meme mecanisme bouton name/value que
+// toggleActifCarte ci-dessus : permet aussi de "reactiver" une alerte
+// (marquer comme non traitee) depuis la vue "alertes traitées".
+export async function definirAlerteTraitee(formData: FormData) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const id = String(formData.get("id") ?? "");
+  const traitee = formData.get("traitee") === "true";
+  if (!id) return;
+
+  // RLS + GRANT colonne s'assurent déjà qu'un utilisateur ne peut modifier
+  // que `traitee_par_utilisateur` sur ses propres lignes -- le filtre
+  // user_id ici est une défense en profondeur.
+  const { error } = await supabase
+    .from("watchlist_alerts")
+    .update({ traitee_par_utilisateur: traitee })
+    .eq("id", id)
+    .eq("user_id", user.id);
+
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/dashboard");
 }
