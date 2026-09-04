@@ -271,6 +271,19 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
               <span className="text-xs text-cyan">Enregistré ✓</span>
             )}
           </form>
+          {notifEmailActive && (
+            // Ajouté le 04/09/2026 : sans nom de domaine vérifié pour
+            // l'expéditeur (SendGrid en vérification "Single Sender", pas de
+            // domaine complet SPF/DKIM/DMARC), les premiers emails d'un
+            // nouvel expéditeur atterrissent souvent en spam -- confirmé en
+            // conditions réelles sur le canari de livraison le jour même.
+            // Prévenir directement ici plutôt que de laisser l'utilisateur
+            // penser que la fonctionnalité ne marche pas.
+            <p className="text-xs text-muted">
+              Tu ne reçois rien par email ? Vérifie ton dossier spam/courrier
+              indésirable, surtout pour les premiers emails.
+            </p>
+          )}
         </section>
 
         <section className={PANNEAU}>
