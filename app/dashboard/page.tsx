@@ -118,9 +118,18 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
   // sont tous deux considérés comme "non traitée" (cf. commentaire de la
   // migration).
   const voirAlertesTraitees = searchParams.alertes === "toutes";
-  const alertesAffichees = voirAlertesTraitees
-    ? alertes
-    : alertes.filter((alerte) => !alerte.traitee_par_utilisateur);
+  // Demande explicite de Justok (04/09/2026, suite à un faux "toujours
+  // disponible" sur une carte réellement en rupture) : une fois
+  // `disponible` confirmé à `false` par verification_alertes.py (jamais
+  // `null`, qui reste "pas encore vérifié" -- cf. sa docstring), la carte
+  // n'a plus rien d'actionnable et disparaît de la liste, quel que soit
+  // `?alertes=`, plutôt que de rester affichée grisée avec un message
+  // "vendu" -- liste plus courte et 100% composée d'opportunités encore
+  // valables.
+  const alertesAffichees = alertes.filter((alerte) => {
+    if (alerte.disponible === false) return false;
+    return voirAlertesTraitees || !alerte.traitee_par_utilisateur;
+  });
 
   // Audit externe du 03/09/2026 : l'erreur de cette requête n'était jamais
   // vérifiée -- en cas d'échec (RLS, panne réseau côté Supabase...) le
@@ -492,19 +501,16 @@ export default async function DashboardPage(props: PageProps<"/dashboard">) {
                       {alerte.titre}
                       {alerte.plateforme ? ` · ${alerte.plateforme}` : ""}
                     </p>
+                    {/* alerte.disponible === false est filtré en amont
+                        (alertesAffichees) -- une alerte affichée ici a donc
+                        toujours disponible=true dès que vérifiée une fois. */}
                     {alerte.derniere_verification != null && (
-                      <p
-                        className={`mt-1 text-xs font-medium ${
-                          alerte.disponible ? "text-cyan" : "text-danger"
+                      <p className="mt-1 text-xs font-medium text-cyan">
+                        {`Toujours disponible${
+                          alerte.prix_verifie != null
+                            ? ` à ${Number(alerte.prix_verifie).toFixed(2)} €`
+                            : ""
                         }`}
-                      >
-                        {alerte.disponible
-                          ? `Toujours disponible${
-                              alerte.prix_verifie != null
-                                ? ` à ${Number(alerte.prix_verifie).toFixed(2)} €`
-                                : ""
-                            }`
-                          : "Probablement vendu / indisponible"}
                       </p>
                     )}
                   </div>
