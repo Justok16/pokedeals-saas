@@ -16,6 +16,15 @@ const LANGUES_VALIDES = ["fr", "jp", "en", "kr", "cn"] as const;
 // matching cote scraper).
 const MAX_LONGUEUR_NOM_CARTE = 200;
 const MAX_LONGUEUR_NOTES = 500;
+// Audit externe multi-IA du 05/09/2026 : le COUNT ci-dessous puis l'INSERT
+// plus bas sont deux requetes separees, non atomiques -- une vraie
+// concurrence (deux onglets, double-clic tres rapide) pouvait faire
+// depasser la limite de justesse. Ce controle reste utile pour un message
+// d'erreur rapide dans le cas normal ; le filet de securite qui garantit la
+// limite meme en cas de concurrence est desormais le trigger Postgres
+// `limiter_watchlist_items` (migration 0016_watchlist_items_limite_atomique.sql)
+// -- CETTE VALEUR DOIT RESTER SYNCHRONISEE avec celle codee en dur dans la
+// fonction du trigger.
 const MAX_CARTES_PAR_UTILISATEUR = 500;
 // Audit externe du 03/09/2026 : envoyerFeedback n'avait aucune limite de
 // frequence, contrairement a ajouterCarte (MAX_CARTES_PAR_UTILISATEUR
