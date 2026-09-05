@@ -195,18 +195,39 @@ rm -rf /tmp/vapidenv
 - `VAPID_PRIVATE_KEY` → secret GitHub Actions `VAPID_PRIVATE_KEY` (dépôt `pokedeals`)
 - Ajouter aussi le secret GitHub Actions `VAPID_CLAIM_EMAIL` (une adresse email de contact, requise par le protocole Web Push — n'importe quelle adresse valide convient)
 
-**Email** — nécessite un compte [Resend](https://resend.com) (gratuit jusqu'à un
-certain volume) :
+**Email** — nécessite un compte [SendGrid](https://sendgrid.com) (gratuit
+jusqu'à 100 emails/jour). Migré de Resend le 04/09/2026 (le compte Resend
+tournait en mode sandbox sans domaine vérifié — voir `CLAUDE.md` du dépôt
+`pokedeals` pour le détail) :
 
-1. Créer un compte, récupérer une clé API (**API Keys**)
-2. Vérifier un domaine d'envoi (**Domains**), ou utiliser le domaine de test
-   `onboarding@resend.dev` fourni par Resend pour démarrer sans domaine propre
-3. Ajouter les secrets GitHub Actions `RESEND_API_KEY` et `RESEND_FROM_EMAIL`
-   (l'adresse d'envoi, ex: `PokéDeals <alertes@tondomaine.com>`) sur le
-   dépôt `pokedeals`
+1. Créer un compte, vérifier un expéditeur (**Settings > Sender
+   Authentication > Single Sender Verification**, gratuit, sans nom de
+   domaine)
+2. Récupérer une clé API (**Settings > API Keys**)
+3. Ajouter les secrets GitHub Actions `SENDGRID_API_KEY` et
+   `SENDGRID_FROM_EMAIL` (l'adresse d'envoi vérifiée à l'étape 1, ex:
+   `PokéDeals <alertes@tondomaine.com>`) sur le dépôt `pokedeals`
 
 PokéDeals est 100% gratuit et illimité pour tous les utilisateurs — aucune
 intégration de paiement n'est nécessaire.
+
+**Webhook de livraison SendGrid (recommandé, 05/09/2026)** — sans lui, le
+seul signal disponible est "l'appel API a été accepté", pas "l'email a
+réellement été livré" (exactement l'angle mort du bug Resend). Active la
+vérification réelle :
+
+1. Dans SendGrid, **Settings > Mail Settings > Event Webhook**
+2. Activer **Signed Event Webhook**, renseigner l'URL
+   `https://<ton-domaine>/api/webhooks/sendgrid`
+3. Cocher au minimum *Delivered*, *Bounced*, *Dropped*, *Spam Report*,
+   *Blocked*
+4. Copier la **Verification Key** affichée → variable Vercel
+   `SENDGRID_WEBHOOK_PUBLIC_KEY` (pas besoin des `-----BEGIN/END-----`, la
+   route les rajoute elle-même si absents)
+
+Sans ce secret : la route refuse toute requête (503), aucune conséquence
+sur le reste de l'app — les emails continuent d'être envoyés normalement,
+seule cette vérification supplémentaire reste inactive.
 
 ### 4. Lancer en local
 
@@ -230,12 +251,16 @@ npm run dev
   fréquence de feedback) — cf. commentaires en tête de fichier
 - `app/dashboard/notif-push.tsx` — activation/désactivation des
   notifications push côté client (bannière + réglages)
+- `app/api/webhooks/sendgrid/route.ts` — réception et vérification (ECDSA)
+  des événements de livraison réels SendGrid (delivered/bounce/...), cf.
+  section notifications ci-dessus
 - `lib/supabase/` — clients Supabase (browser, server, middleware)
 - `proxy.ts` — rafraîchissement de session + protection de `/dashboard`
 - `supabase/migrations/` — schéma SQL (`watchlist_items`, `watchlist_alerts`,
   `push_subscriptions`, `user_preferences`, `market_cotes`, `feedback`,
-  policies RLS ; `subscriptions` est un vestige non utilisé depuis le
-  passage au tout-gratuit) — appliqué manuellement, cf. étape 1 ci-dessus
+  `sendgrid_evenements`, policies RLS ; `subscriptions` est un vestige non
+  utilisé depuis le passage au tout-gratuit) — appliqué manuellement, cf.
+  étape 1 ci-dessus
 - `scripts/setup-supabase.sh` — provisionne le projet Supabase et applique le schéma via l'API (à lancer en local)
 
 ## Déploiement
@@ -243,4 +268,5 @@ npm run dev
 Prévu pour [Vercel](https://vercel.com) : connecter le repo, et renseigner
 les variables d'environnement `NEXT_PUBLIC_SUPABASE_URL` /
 `NEXT_PUBLIC_SUPABASE_ANON_KEY` / `NEXT_PUBLIC_VAPID_PUBLIC_KEY` /
-`NEXT_PUBLIC_SITE_URL` dans les réglages du projet Vercel.
+`NEXT_PUBLIC_SITE_URL` dans les réglages du projet Vercel, et optionnellement
+`SENDGRID_WEBHOOK_PUBLIC_KEY` (cf. section notifications ci-dessus).
