@@ -6,6 +6,23 @@ import { createClient } from "@/lib/supabase/server";
 
 const LANGUES_VALIDES = ["fr", "jp", "en", "kr", "cn"] as const;
 
+// Audit externe multi-IA du 05/09/2026 : un utilisateur réel surveillait
+// "Metagross PSA 10 m2a 245/193" -- ce système ne suit QUE des cartes
+// brutes (les cartes mentionnant une gradation dans le titre du produit sont
+// explicitement exclues des alertes côté scraper, cf. MOTS_CARTE_GRADEE dans
+// bonne_affaire_shopify.py, pieges connus déjà documentés) : cette carte ne
+// pouvait donc structurellement JAMAIS déclencher d'alerte, sans qu'aucun
+// signal ne le montre sur le dashboard -- 0 alerte en 13 jours, découvert
+// lors d'un audit. Empêche toute nouvelle carte de ce type d'être ajoutée
+// plutôt que de laisser un utilisateur perdre un slot de watchlist sur une
+// requête impossible à satisfaire.
+const MOTS_GRADATION = ["psa", "pca", "bgs", "cgc", "ccc", "gradee", "gradée", "graded"];
+
+function contientMentionGradation(nomCarte: string): boolean {
+  const normalise = nomCarte.toLowerCase();
+  return MOTS_GRADATION.some((mot) => normalise.includes(mot));
+}
+
 // Audit externe du 30/08/2026 : aucune limite cote serveur sur la longueur
 // des champs texte ni le nombre de cartes par utilisateur -- une Server
 // Action est appelable directement (contourne les attributs maxLength/
@@ -65,6 +82,11 @@ export async function ajouterCarte(formData: FormData) {
   if (!LANGUES_VALIDES.includes(langue as (typeof LANGUES_VALIDES)[number])) {
     throw new Error("Langue invalide.");
   }
+  if (contientMentionGradation(nomCarte)) {
+    throw new Error(
+      "Ce service ne suit que des cartes brutes (non gradées) -- retire toute mention PSA/BGS/CGC/CCC du nom, aucune alerte ne peut jamais être déclenchée pour une carte gradée."
+    );
+  }
 
   const { count } = await supabase
     .from("watchlist_items")
@@ -119,6 +141,11 @@ export async function modifierCarte(formData: FormData) {
   }
   if (!LANGUES_VALIDES.includes(langue as (typeof LANGUES_VALIDES)[number])) {
     throw new Error("Langue invalide.");
+  }
+  if (contientMentionGradation(nomCarte)) {
+    throw new Error(
+      "Ce service ne suit que des cartes brutes (non gradées) -- retire toute mention PSA/BGS/CGC/CCC du nom, aucune alerte ne peut jamais être déclenchée pour une carte gradée."
+    );
   }
 
   // RLS s'assure déjà qu'un utilisateur ne peut modifier que ses propres
