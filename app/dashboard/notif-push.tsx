@@ -219,28 +219,41 @@ export default function NotifPush({
   }
 
   return (
-    <div className="flex items-center gap-3">
-      {etat === "actif" ? (
-        <button
-          type="button"
-          onClick={desactiver}
-          className="text-xs text-muted underline-offset-4 hover:text-foreground hover:underline"
-        >
-          Désactiver les notifications push
-        </button>
-      ) : (
-        <button
-          type="button"
-          onClick={activer}
-          disabled={etat === "en_cours"}
-          className="text-xs text-muted underline-offset-4 hover:text-foreground hover:underline disabled:opacity-50"
-        >
-          {etat === "refuse"
-            ? "Notifications bloquées — autorise-les dans les réglages du navigateur"
-            : "Activer les notifications push"}
-        </button>
-      )}
-      {erreur && <span className="text-xs text-danger">{erreur}</span>}
+    <div className="flex flex-col gap-1.5">
+      <div className="flex items-center gap-3">
+        {etat === "actif" ? (
+          <button
+            type="button"
+            onClick={desactiver}
+            className="text-xs text-muted underline-offset-4 hover:text-foreground hover:underline"
+          >
+            Désactiver les notifications push
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={activer}
+            disabled={etat === "en_cours"}
+            className="text-xs text-muted underline-offset-4 hover:text-foreground hover:underline disabled:opacity-50"
+          >
+            {etat === "refuse"
+              ? "Notifications bloquées — autorise-les dans les réglages du navigateur"
+              : "Activer les notifications push"}
+          </button>
+        )}
+        {erreur && <span className="text-xs text-danger">{erreur}</span>}
+      </div>
+      {/* Ajouté le 06/09/2026 : certains navigateurs axés vie privée
+          effacent l'abonnement push à la fermeture (données de site
+          supprimées), désactivant silencieusement les notifications sans
+          rapport avec un bug côté PokéDeals -- évite qu'un utilisateur ne
+          comprenne pas pourquoi ça s'arrête de fonctionner. */}
+      <p className="text-[11px] text-muted">
+        Certains navigateurs orientés vie privée (Brave, Firefox en mode strict…) peuvent
+        désactiver les notifications à la fermeture du navigateur. Si elles s&apos;arrêtent
+        d&apos;elles-mêmes, vérifie les réglages de confidentialité de ton navigateur (ex.
+        « effacer les cookies/données de site à la fermeture »).
+      </p>
     </div>
   );
 }
