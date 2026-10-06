@@ -1,26 +1,30 @@
 import type { Metadata, Viewport } from "next";
-import { Bungee, Sora, JetBrains_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import RegisterServiceWorker from "./register-sw";
 import Footer from "./footer";
 import { NOMBRE_BOUTIQUES } from "@/lib/constantes";
 
-const bungee = Bungee({
+// Polices auto-hébergées (app/fonts) : voir app/fonts/README.md.
+const bungee = localFont({
+  src: "./fonts/bungee-latin-400-normal.woff2",
   variable: "--font-display",
-  subsets: ["latin"],
-  weight: ["400"],
+  weight: "400",
+  display: "swap",
 });
 
-const sora = Sora({
+const sora = localFont({
+  src: "./fonts/sora-latin-wght-normal.woff2",
   variable: "--font-sans",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: "100 800",
+  display: "swap",
 });
 
-const jetbrainsMono = JetBrains_Mono({
+const jetbrainsMono = localFont({
+  src: "./fonts/jetbrains-mono-latin-wght-normal.woff2",
   variable: "--font-mono",
-  subsets: ["latin"],
-  weight: ["400", "500", "700"],
+  weight: "100 800",
+  display: "swap",
 });
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
