@@ -41,3 +41,14 @@ jobs:
         run: npx tsc --noEmit
       - name: Lint (ESLint)
         run: npm run lint
+      - name: Build de production (Next.js)
+        # Ajouté le 06/10/2026 : tsc + eslint ne détectent pas tout ce qui casse
+        # `next build` (ex. échec de chargement d'une police, route invalide). Un
+        # build cassé n'apparaissait qu'au déploiement Vercel, après le merge.
+        # Variables factices : la build n'a besoin d'aucun vrai secret.
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-dummy-key
+          NEXT_PUBLIC_SITE_URL: http://localhost:3000
+          NEXT_TELEMETRY_DISABLED: "1"
